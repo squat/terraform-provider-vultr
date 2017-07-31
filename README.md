@@ -2,6 +2,9 @@
 
 This is a Terraform provider for the Vultr cloud. Find out more about [Vultr](https://www.vultr.com/about/).
 
+[![Build Status](https://travis-ci.org/squat/terraform-provider-vultr.svg?branch=master)](https://travis-ci.org/squat/terraform-provider-vultr)
+[![Go Report Card](https://goreportcard.com/badge/github.com/squat/terraform-provider-vultr)](https://goreportcard.com/report/github.com/squat/terraform-provider-vultr)
+
 ## Requirements
 
 * A Vultr account and API key
