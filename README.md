@@ -19,7 +19,7 @@ go get -u github.com/squat/terraform-provider-vultr
 ```
 
 Register the plugin in `~/.terraformrc`:
-```sh
+```tf
 providers {
   vultr = "/path/to/terraform-provider-vultr"
 }
