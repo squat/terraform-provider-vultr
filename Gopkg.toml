@@ -1,0 +1,7 @@
+[[constraint]]
+  name = "github.com/JamesClonk/vultr"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/hashicorp/terraform"
+  version = "0.9.11"
