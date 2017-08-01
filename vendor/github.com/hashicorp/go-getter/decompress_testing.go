@@ -11,8 +11,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
-
-	"github.com/mitchellh/go-testing-interface"
+	"testing"
 )
 
 // TestDecompressCase is a single test case for testing decompressors
@@ -25,7 +24,7 @@ type TestDecompressCase struct {
 }
 
 // TestDecompressor is a helper function for testing generic decompressors.
-func TestDecompressor(t testing.T, d Decompressor, cases []TestDecompressCase) {
+func TestDecompressor(t *testing.T, d Decompressor, cases []TestDecompressCase) {
 	for _, tc := range cases {
 		t.Logf("Testing: %s", tc.Input)
 
@@ -88,7 +87,7 @@ func TestDecompressor(t testing.T, d Decompressor, cases []TestDecompressCase) {
 	}
 }
 
-func testListDir(t testing.T, path string) []string {
+func testListDir(t *testing.T, path string) []string {
 	var result []string
 	err := filepath.Walk(path, func(sub string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -103,7 +102,7 @@ func testListDir(t testing.T, path string) []string {
 
 		// If it is a dir, add trailing sep
 		if info.IsDir() {
-			sub += string(os.PathSeparator)
+			sub += "/"
 		}
 
 		result = append(result, sub)
@@ -117,7 +116,7 @@ func testListDir(t testing.T, path string) []string {
 	return result
 }
 
-func testMD5(t testing.T, path string) string {
+func testMD5(t *testing.T, path string) string {
 	f, err := os.Open(path)
 	if err != nil {
 		t.Fatalf("err: %s", err)

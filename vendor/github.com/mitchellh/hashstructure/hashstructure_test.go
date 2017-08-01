@@ -1,9 +1,7 @@
 package hashstructure
 
 import (
-	"fmt"
 	"testing"
-	"time"
 )
 
 func TestHash_identity(t *testing.T) {
@@ -123,140 +121,18 @@ func TestHash_equal(t *testing.T) {
 			},
 			true,
 		},
-
-		{
-			struct {
-				testFoo
-				Foo string
-			}{
-				Foo:     "bar",
-				testFoo: testFoo{Name: "baz"},
-			},
-			struct {
-				testFoo
-				Foo string
-			}{
-				Foo: "bar",
-			},
-			true,
-		},
-
-		{
-			struct {
-				Foo string
-			}{
-				Foo: "bar",
-			},
-			struct {
-				testFoo
-				Foo string
-			}{
-				Foo: "bar",
-			},
-			true,
-		},
-	}
-
-	for i, tc := range cases {
-		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			t.Logf("Hashing: %#v", tc.One)
-			one, err := Hash(tc.One, nil)
-			t.Logf("Result: %d", one)
-			if err != nil {
-				t.Fatalf("Failed to hash %#v: %s", tc.One, err)
-			}
-			t.Logf("Hashing: %#v", tc.Two)
-			two, err := Hash(tc.Two, nil)
-			t.Logf("Result: %d", two)
-			if err != nil {
-				t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
-			}
-
-			// Zero is always wrong
-			if one == 0 {
-				t.Fatalf("zero hash: %#v", tc.One)
-			}
-
-			// Compare
-			if (one == two) != tc.Match {
-				t.Fatalf("bad, expected: %#v\n\n%#v\n\n%#v", tc.Match, tc.One, tc.Two)
-			}
-		})
-	}
-}
-
-func TestHash_equalIgnore(t *testing.T) {
-	type Test1 struct {
-		Name string
-		UUID string `hash:"ignore"`
-	}
-
-	type Test2 struct {
-		Name string
-		UUID string `hash:"-"`
-	}
-
-	type TestTime struct {
-		Name string
-		Time time.Time `hash:"string"`
-	}
-
-	type TestTime2 struct {
-		Name string
-		Time time.Time
-	}
-
-	now := time.Now()
-	cases := []struct {
-		One, Two interface{}
-		Match    bool
-	}{
-		{
-			Test1{Name: "foo", UUID: "foo"},
-			Test1{Name: "foo", UUID: "bar"},
-			true,
-		},
-
-		{
-			Test1{Name: "foo", UUID: "foo"},
-			Test1{Name: "foo", UUID: "foo"},
-			true,
-		},
-
-		{
-			Test2{Name: "foo", UUID: "foo"},
-			Test2{Name: "foo", UUID: "bar"},
-			true,
-		},
-
-		{
-			Test2{Name: "foo", UUID: "foo"},
-			Test2{Name: "foo", UUID: "foo"},
-			true,
-		},
-		{
-			TestTime{Name: "foo", Time: now},
-			TestTime{Name: "foo", Time: time.Time{}},
-			false,
-		},
-		{
-			TestTime{Name: "foo", Time: now},
-			TestTime{Name: "foo", Time: now},
-			true,
-		},
-		{
-			TestTime2{Name: "foo", Time: now},
-			TestTime2{Name: "foo", Time: time.Time{}},
-			true,
-		},
 	}
 
 	for _, tc := range cases {
+		t.Logf("Hashing: %#v", tc.One)
 		one, err := Hash(tc.One, nil)
+		t.Logf("Result: %d", one)
 		if err != nil {
 			t.Fatalf("Failed to hash %#v: %s", tc.One, err)
 		}
+		t.Logf("Hashing: %#v", tc.Two)
 		two, err := Hash(tc.Two, nil)
+		t.Logf("Result: %d", two)
 		if err != nil {
 			t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
 		}
@@ -273,119 +149,35 @@ func TestHash_equalIgnore(t *testing.T) {
 	}
 }
 
-func TestHash_stringTagError(t *testing.T) {
-	type Test1 struct {
-		Name        string
-		BrokenField string `hash:"string"`
-	}
-
-	type Test2 struct {
-		Name        string
-		BustedField int `hash:"string"`
-	}
-
-	type Test3 struct {
-		Name string
-		Time time.Time `hash:"string"`
-	}
-
-	cases := []struct {
-		Test  interface{}
-		Field string
-	}{
-		{
-			Test1{Name: "foo", BrokenField: "bar"},
-			"BrokenField",
-		},
-		{
-			Test2{Name: "foo", BustedField: 23},
-			"BustedField",
-		},
-		{
-			Test3{Name: "foo", Time: time.Now()},
-			"",
-		},
-	}
-
-	for _, tc := range cases {
-		_, err := Hash(tc.Test, nil)
-		if err != nil {
-			if ens, ok := err.(*ErrNotStringer); ok {
-				if ens.Field != tc.Field {
-					t.Fatalf("did not get expected field %#v: got %s wanted %s", tc.Test, ens.Field, tc.Field)
-				}
-			} else {
-				t.Fatalf("unknown error %#v: got %s", tc, err)
-			}
-		}
-	}
-}
-
-func TestHash_equalNil(t *testing.T) {
+func TestHash_equalIgnore(t *testing.T) {
 	type Test struct {
-		Str   *string
-		Int   *int
-		Map   map[string]string
-		Slice []string
+		Name string
+		UUID string `hash:"ignore"`
 	}
 
 	cases := []struct {
 		One, Two interface{}
-		ZeroNil  bool
 		Match    bool
 	}{
 		{
-			Test{
-				Str:   nil,
-				Int:   nil,
-				Map:   nil,
-				Slice: nil,
-			},
-			Test{
-				Str:   new(string),
-				Int:   new(int),
-				Map:   make(map[string]string),
-				Slice: make([]string, 0),
-			},
-			true,
+			Test{Name: "foo", UUID: "foo"},
+			Test{Name: "foo", UUID: "bar"},
 			true,
 		},
+
 		{
-			Test{
-				Str:   nil,
-				Int:   nil,
-				Map:   nil,
-				Slice: nil,
-			},
-			Test{
-				Str:   new(string),
-				Int:   new(int),
-				Map:   make(map[string]string),
-				Slice: make([]string, 0),
-			},
-			false,
-			false,
-		},
-		{
-			nil,
-			0,
-			true,
-			true,
-		},
-		{
-			nil,
-			0,
-			false,
+			Test{Name: "foo", UUID: "foo"},
+			Test{Name: "foo", UUID: "foo"},
 			true,
 		},
 	}
 
 	for _, tc := range cases {
-		one, err := Hash(tc.One, &HashOptions{ZeroNil: tc.ZeroNil})
+		one, err := Hash(tc.One, nil)
 		if err != nil {
 			t.Fatalf("Failed to hash %#v: %s", tc.One, err)
 		}
-		two, err := Hash(tc.Two, &HashOptions{ZeroNil: tc.ZeroNil})
+		two, err := Hash(tc.Two, nil)
 		if err != nil {
 			t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
 		}

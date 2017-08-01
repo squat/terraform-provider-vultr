@@ -26,7 +26,7 @@ func TestFlatten(t *testing.T) {
 	}
 
 	expected := strings.TrimSpace(`
-3 errors occurred:
+3 error(s) occurred:
 
 * one
 * two
