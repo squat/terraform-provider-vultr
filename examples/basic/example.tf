@@ -4,12 +4,19 @@ provider "vultr" {
   api_key = "<your-vultr-api-key>"
 }
 
+data "vultr_os" "container_linux" {
+  filter {
+    name   = "family"
+    values = ["coreos"]
+  }
+}
+
 // Create a Vultr virtual machine.
 resource "vultr_instance" "example" {
   name              = "basic"
-  region_id         = 12                                   // Silicon Valley
-  plan_id           = 201                                  // $5
-  os_id             = 179                                  // CoreOS Container Linux stable
+  region_id         = 12                                    // Silicon Valley
+  plan_id           = 201                                   // $5
+  os_id             = "${data.vultr_os.container_linux.id}" // CoreOS Container Linux stable
   ssh_keys          = ["${vultr_ssh_key.example.name}"]
   hostname          = "basic"
   tag               = "container-linux"

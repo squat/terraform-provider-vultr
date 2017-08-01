@@ -18,6 +18,10 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 
+		DataSourcesMap: map[string]*schema.Resource{
+			"vultr_os": dataSourceOS(),
+		},
+
 		ResourcesMap: map[string]*schema.Resource{
 			"vultr_firewall_group": resourceFirewallGroup(),
 			"vultr_firewall_rule":  resourceFirewallRule(),
