@@ -4,6 +4,7 @@ provider "vultr" {
   api_key = "<your-vultr-api-key>"
 }
 
+// Find the ID for CoreOS Container Linux.
 data "vultr_os" "container_linux" {
   filter {
     name   = "family"
