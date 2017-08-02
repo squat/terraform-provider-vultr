@@ -48,11 +48,24 @@ data "vultr_os" "container_linux" {
   }
 }
 
+// Find the ID for a starter plan.
+data "vultr_plan" "starter" {
+  filter {
+    name   = "price_per_month"
+    values = ["5.00"]
+  }
+
+  filter {
+    name   = "ram"
+    values = ["1024"]
+  }
+}
+
 // Create a Vultr virtual machine.
 resource "vultr_instance" "example" {
   name              = "example"
   region_id         = 12                                    // Silicon Valley
-  plan_id           = 201                                   // $5
+  plan_id           = "${data.vultr_plan.starter.id}"       // $5
   os_id             = "${data.vultr_os.container_linux.id}" // CoreOS Container Linux stable
   ssh_keys          = ["squat"]
   hostname          = "example"

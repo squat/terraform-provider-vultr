@@ -91,11 +91,11 @@ func dataSourceOSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(images) < 1 {
-		return errors.New("The query returned for OS returned no results. Please modify the search criteria and try again")
+		return errors.New("The query for OS returned no results. Please modify the search criteria and try again")
 	}
 
 	if len(images) > 1 {
-		return fmt.Errorf("The query returned for OS returned %d results. Please make the search criteria more specific and try again", len(images))
+		return fmt.Errorf("The query for OS returned %d results. Please make the search criteria more specific and try again", len(images))
 	}
 
 	d.SetId(strconv.Itoa(images[0].ID))
