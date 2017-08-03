@@ -38,6 +38,20 @@ func validateFirewallRuleProtocol(v interface{}, k string) (ws []string, errors 
 	return
 }
 
+// validateStartupScriptType ensures that the string value is a valid
+// startup script type and returns an error otherwise.
+func validateStartupScriptType(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+	validProtocols := map[string]struct{}{
+		"boot": {},
+		"pxe":  {},
+	}
+	if _, ok := validProtocols[value]; !ok {
+		errors = append(errors, fmt.Errorf("%q contains an invalid startup script type %q; valid types are: %q and %q", k, value, "boot", "pxe"))
+	}
+	return
+}
+
 // validateRegex ensures that the string is a valid regular expression.
 func validateRegex(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)

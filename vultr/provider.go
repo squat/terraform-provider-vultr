@@ -28,6 +28,7 @@ func Provider() terraform.ResourceProvider {
 			"vultr_firewall_rule":  resourceFirewallRule(),
 			"vultr_instance":       resourceInstance(),
 			"vultr_ipv4":           resourceIPV4(),
+			"vultr_startup_script": resourceStartupScript(),
 			"vultr_ssh_key":        resourceSSHKey(),
 		},
 

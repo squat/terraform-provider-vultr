@@ -100,6 +100,12 @@ func resourceInstance() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"script_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+			},
+
 			"ssh_keys": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -145,6 +151,7 @@ func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 		Hostname:          d.Get("hostname").(string),
 		IPV6:              d.Get("ipv6").(bool),
 		PrivateNetworking: d.Get("private_networking").(bool),
+		Script:            d.Get("script_id").(int),
 		Tag:               d.Get("tag").(string),
 		UserData:          d.Get("user_data").(string),
 	}
