@@ -25,14 +25,22 @@ data "vultr_plan" "starter" {
   }
 }
 
+// Find the ID of your SSH key.
+data "vultr_ssh_key" "squat" {
+  filter {
+    name   = "name"
+    values = ["squat"]
+  }
+}
+
 // Create a Vultr virtual machine.
 resource "vultr_instance" "example" {
-  name              = "basic"
+  name              = "example"
   region_id         = 12                                    // Silicon Valley
-  plan_id           = "${data.vultr_plan.starter.id}"       // $5
-  os_id             = "${data.vultr_os.container_linux.id}" // CoreOS Container Linux stable
-  ssh_keys          = ["${vultr_ssh_key.example.name}"]
-  hostname          = "basic"
+  plan_id           = "${data.vultr_plan.starter.id}"
+  os_id             = "${data.vultr_os.container_linux.id}"
+  ssh_key_ids       = ["${data.vultr_ssh_key.squat.id}"]
+  hostname          = "example"
   tag               = "container-linux"
   firewall_group_id = "${vultr_firewall_group.example.id}"
 }

@@ -106,13 +106,6 @@ func resourceInstance() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"ssh_keys": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-
 			"ssh_key_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -161,37 +154,9 @@ func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	planID := d.Get("plan_id").(int)
 	regionID := d.Get("region_id").(int)
 
-	// Merge the SSH key IDs and names into a map of IDs.
-	keys := make(map[string]struct{})
-	if d.Get("ssh_keys.#").(int) > 0 {
-		allKeys, err := client.GetSSHKeys()
-		if err != nil {
-			return fmt.Errorf("Error fetching SSH keys: %v", err)
-		}
-		for _, name := range d.Get("ssh_keys").([]interface{}) {
-			var ids []string
-			for _, k := range allKeys {
-				if k.Name == name.(string) {
-					ids = append(ids, k.ID)
-				}
-			}
-			if len(ids) == 0 {
-				return fmt.Errorf("Error finding SSH key with name %q", name.(string))
-			}
-			if len(ids) > 1 {
-				log.Printf("[WARN] Adding multiple SSH keys with name %q", name.(string))
-			}
-			for _, id := range ids {
-				keys[id] = struct{}{}
-			}
-		}
-	}
-	for _, id := range d.Get("ssh_key_ids").([]interface{}) {
-		keys[id.(string)] = struct{}{}
-	}
-	keyIDs := make([]string, 0, len(keys))
-	for k := range keys {
-		keyIDs = append(keyIDs, k)
+	keyIDs := make([]string, d.Get("ssh_key_ids.#").(int))
+	for i, id := range d.Get("ssh_key_ids").([]interface{}) {
+		keyIDs[i] = id.(string)
 	}
 	options.SSHKey = strings.Join(keyIDs, ",")
 
