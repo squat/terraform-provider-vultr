@@ -29,6 +29,7 @@ func resourceStartupScript() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				ForceNew:     true,
 				ValidateFunc: validateStartupScriptType,
 			},
 		},
