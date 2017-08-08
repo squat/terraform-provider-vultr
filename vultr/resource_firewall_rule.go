@@ -111,6 +111,11 @@ func resourceFirewallRuleRead(d *schema.ResourceData, meta interface{}) error {
 
 	firewallRules, err := client.GetFirewallRules(firewallGroupID)
 	if err != nil {
+		if err.Error() == "Invalid firewall group. Check FIREWALLGROUPID value and ensure your API key matches the account." {
+			log.Printf("[WARN] Removing firewall rule (%s) because it is gone", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting firewall rule (%s): %v", d.Id(), err)
 	}
 
