@@ -40,6 +40,14 @@ provider "vultr" {
   api_key = "<your-vultr-api-key>"
 }
 
+// Find the ID of the Silicon Valley region.
+data "vultr_region" "silicon_valley" {
+  filter {
+    name   = "name"
+    values = ["Silicon Valley"]
+  }
+}
+
 // Find the ID for CoreOS Container Linux.
 data "vultr_os" "container_linux" {
   filter {
@@ -61,7 +69,7 @@ data "vultr_plan" "starter" {
   }
 }
 
-// Find the ID of your SSH key.
+// Find the ID of an existing SSH key.
 data "vultr_ssh_key" "squat" {
   filter {
     name   = "name"
@@ -72,7 +80,7 @@ data "vultr_ssh_key" "squat" {
 // Create a Vultr virtual machine.
 resource "vultr_instance" "example" {
   name              = "example"
-  region_id         = 12                                    // Silicon Valley
+  region_id         = "${data.vultr_region.silicon_valley.id}"
   plan_id           = "${data.vultr_plan.starter.id}"
   os_id             = "${data.vultr_os.container_linux.id}"
   ssh_key_ids       = ["${data.vultr_ssh_key.squat.id}"]
