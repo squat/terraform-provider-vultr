@@ -22,6 +22,18 @@ func validateCIDRNetworkAddress(v interface{}, k string) (ws []string, errors []
 	return
 }
 
+// validateIPAddress ensures that the string value is a valid IPv4 or IPv6
+// address and returns an error otherwise.
+func validateIPAddress(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+	ip := net.ParseIP(value)
+	if ip == nil {
+		errors = append(errors, fmt.Errorf("%q must contain a valid IP address", k))
+		return
+	}
+	return
+}
+
 // validateFirewallRuleProtocol ensures that the string value is a valid
 // firewall rule protocol and returns an error otherwise.
 func validateFirewallRuleProtocol(v interface{}, k string) (ws []string, errors []error) {
