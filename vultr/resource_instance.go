@@ -17,6 +17,12 @@ func resourceInstance() *schema.Resource {
 		Delete: resourceInstanceDelete,
 
 		Schema: map[string]*schema.Schema{
+			"application_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+
 			"cost_per_month": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -140,6 +146,7 @@ func resourceInstance() *schema.Resource {
 func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 	options := &lib.ServerOptions{
+		AppID:             d.Get("application_id").(string),
 		FirewallGroupID:   d.Get("firewall_group_id").(string),
 		Hostname:          d.Get("hostname").(string),
 		IPV6:              d.Get("ipv6").(bool),
