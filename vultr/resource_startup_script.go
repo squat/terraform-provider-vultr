@@ -69,10 +69,7 @@ func resourceStartupScriptRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("content", script.Content)
 	d.Set("name", script.Name)
-	// TODO(squat): The Vultr API currently does not send back a `type` field in JSON
-	// despite documenting it https://www.vultr.com/api/#startupscript_startupscript_list.
-	// Add this line back in once the Vultr API, not the library, actually sends the type.
-	//d.Set("type", script.Type)
+	d.Set("type", script.Type)
 
 	return nil
 }
