@@ -46,7 +46,9 @@ Write-Host 'Installing Chef Client...'
 Start-Process -FilePath msiexec -ArgumentList /qn, /i, $dest -Wait
 `
 
-func (p *provisioner) windowsInstallChefClient(o terraform.UIOutput, comm communicator.Communicator) error {
+func (p *Provisioner) windowsInstallChefClient(
+	o terraform.UIOutput,
+	comm communicator.Communicator) error {
 	script := path.Join(path.Dir(comm.ScriptPath()), "ChefClient.ps1")
 	content := fmt.Sprintf(installScript, p.Version, p.HTTPProxy, strings.Join(p.NOProxy, ","))
 
@@ -60,7 +62,9 @@ func (p *provisioner) windowsInstallChefClient(o terraform.UIOutput, comm commun
 	return p.runCommand(o, comm, installCmd)
 }
 
-func (p *provisioner) windowsCreateConfigFiles(o terraform.UIOutput, comm communicator.Communicator) error {
+func (p *Provisioner) windowsCreateConfigFiles(
+	o terraform.UIOutput,
+	comm communicator.Communicator) error {
 	// Make sure the config directory exists
 	cmd := fmt.Sprintf("cmd /c if not exist %q mkdir %q", windowsConfDir, windowsConfDir)
 	if err := p.runCommand(o, comm, cmd); err != nil {

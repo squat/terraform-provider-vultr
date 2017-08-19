@@ -631,121 +631,87 @@ func TestStateSameLineage(t *testing.T) {
 	}
 }
 
-func TestStateMarshalEqual(t *testing.T) {
-	tests := map[string]struct {
+func TestStateIncrementSerialMaybe(t *testing.T) {
+	cases := map[string]struct {
 		S1, S2 *State
-		Want   bool
+		Serial int64
 	}{
-		"both nil": {
-			nil,
-			nil,
-			true,
-		},
-		"first zero, second nil": {
+		"S2 is nil": {
 			&State{},
 			nil,
-			false,
+			0,
 		},
-		"first nil, second zero": {
-			nil,
-			&State{},
-			false,
-		},
-		"both zero": {
-			// These are not equal because they both implicitly init with
-			// different lineage.
+		"S2 is identical": {
 			&State{},
 			&State{},
-			false,
+			0,
 		},
-		"both set, same lineage": {
+		"S2 is different": {
+			&State{},
 			&State{
-				Lineage: "abc123",
-			},
-			&State{
-				Lineage: "abc123",
-			},
-			true,
-		},
-		"both set, same lineage, different serial": {
-			&State{
-				Lineage: "abc123",
-				Serial:  1,
-			},
-			&State{
-				Lineage: "abc123",
-				Serial:  2,
-			},
-			false,
-		},
-		"both set, same lineage, same serial, same resources": {
-			&State{
-				Lineage: "abc123",
-				Serial:  1,
 				Modules: []*ModuleState{
-					{
-						Path: []string{"root"},
+					&ModuleState{Path: rootModulePath},
+				},
+			},
+			1,
+		},
+		"S2 is different, but only via Instance Metadata": {
+			&State{
+				Serial: 3,
+				Modules: []*ModuleState{
+					&ModuleState{
+						Path: rootModulePath,
 						Resources: map[string]*ResourceState{
-							"foo_bar.baz": {},
+							"test_instance.foo": &ResourceState{
+								Primary: &InstanceState{
+									Meta: map[string]interface{}{},
+								},
+							},
 						},
 					},
 				},
 			},
 			&State{
-				Lineage: "abc123",
-				Serial:  1,
+				Serial: 3,
 				Modules: []*ModuleState{
-					{
-						Path: []string{"root"},
+					&ModuleState{
+						Path: rootModulePath,
 						Resources: map[string]*ResourceState{
-							"foo_bar.baz": {},
+							"test_instance.foo": &ResourceState{
+								Primary: &InstanceState{
+									Meta: map[string]interface{}{
+										"schema_version": "1",
+									},
+								},
+							},
 						},
 					},
 				},
 			},
-			true,
+			4,
 		},
-		"both set, same lineage, same serial, different resources": {
+		"S1 serial is higher": {
+			&State{Serial: 5},
 			&State{
-				Lineage: "abc123",
-				Serial:  1,
+				Serial: 3,
 				Modules: []*ModuleState{
-					{
-						Path: []string{"root"},
-						Resources: map[string]*ResourceState{
-							"foo_bar.baz": {},
-						},
-					},
+					&ModuleState{Path: rootModulePath},
 				},
 			},
-			&State{
-				Lineage: "abc123",
-				Serial:  1,
-				Modules: []*ModuleState{
-					{
-						Path: []string{"root"},
-						Resources: map[string]*ResourceState{
-							"pizza_crust.tasty": {},
-						},
-					},
-				},
-			},
-			false,
+			5,
+		},
+		"S2 has a different TFVersion": {
+			&State{TFVersion: "0.1"},
+			&State{TFVersion: "0.2"},
+			1,
 		},
 	}
 
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			got := test.S1.MarshalEqual(test.S2)
-			if got != test.Want {
-				t.Errorf("wrong result %#v; want %#v", got, test.Want)
-				s1Buf := &bytes.Buffer{}
-				s2Buf := &bytes.Buffer{}
-				_ = WriteState(test.S1, s1Buf)
-				_ = WriteState(test.S2, s2Buf)
-				t.Logf("\nState 1: %s\nState 2: %s", s1Buf.Bytes(), s2Buf.Bytes())
-			}
-		})
+	for name, tc := range cases {
+		tc.S1.IncrementSerialMaybe(tc.S2)
+		if tc.S1.Serial != tc.Serial {
+			t.Fatalf("Bad: %s\nGot: %d", name, tc.S1.Serial)
+		}
 	}
 }
 

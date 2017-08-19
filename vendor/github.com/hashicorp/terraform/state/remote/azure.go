@@ -8,8 +8,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	mainStorage "github.com/Azure/azure-sdk-for-go/storage"
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	riviera "github.com/jen20/riviera/azure"
 )
@@ -70,7 +68,7 @@ func getStorageAccountAccessKey(conf map[string]string, resourceGroupName, stora
 		return "", err
 	}
 
-	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, creds.TenantID)
+	oauthConfig, err := env.OAuthConfigForTenant(creds.TenantID)
 	if err != nil {
 		return "", err
 	}
@@ -78,13 +76,13 @@ func getStorageAccountAccessKey(conf map[string]string, resourceGroupName, stora
 		return "", fmt.Errorf("Unable to configure OAuthConfig for tenant %s", creds.TenantID)
 	}
 
-	spt, err := adal.NewServicePrincipalToken(*oauthConfig, creds.ClientID, creds.ClientSecret, env.ResourceManagerEndpoint)
+	spt, err := azure.NewServicePrincipalToken(*oauthConfig, creds.ClientID, creds.ClientSecret, env.ResourceManagerEndpoint)
 	if err != nil {
 		return "", err
 	}
 
 	accountsClient := storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, creds.SubscriptionID)
-	accountsClient.Authorizer = autorest.NewBearerAuthorizer(spt)
+	accountsClient.Authorizer = spt
 
 	keys, err := accountsClient.ListKeys(resourceGroupName, storageAccountName)
 	if err != nil {
@@ -165,10 +163,7 @@ type AzureClient struct {
 }
 
 func (c *AzureClient) Get() (*Payload, error) {
-	containerReference := c.blobClient.GetContainerReference(c.containerName)
-	blobReference := containerReference.GetBlobReference(c.keyName)
-	options := &mainStorage.GetBlobOptions{}
-	blob, err := blobReference.Get(options)
+	blob, err := c.blobClient.GetBlob(c.containerName, c.keyName)
 	if err != nil {
 		if storErr, ok := err.(mainStorage.AzureStorageServiceError); ok {
 			if storErr.Code == "BlobNotFound" {
@@ -198,38 +193,28 @@ func (c *AzureClient) Get() (*Payload, error) {
 }
 
 func (c *AzureClient) Put(data []byte) error {
-	setOptions := &mainStorage.SetBlobPropertiesOptions{}
-	putOptions := &mainStorage.PutBlobOptions{}
-
-	containerReference := c.blobClient.GetContainerReference(c.containerName)
-	blobReference := containerReference.GetBlobReference(c.keyName)
-
-	blobReference.Properties.ContentType = "application/json"
-	blobReference.Properties.ContentLength = int64(len(data))
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
 
 	if c.leaseID != "" {
-		setOptions.LeaseID = c.leaseID
-		putOptions.LeaseID = c.leaseID
+		headers["x-ms-lease-id"] = c.leaseID
 	}
 
-	reader := bytes.NewReader(data)
-
-	err := blobReference.CreateBlockBlobFromReader(reader, putOptions)
-	if err != nil {
-		return err
-	}
-
-	return blobReference.SetProperties(setOptions)
+	return c.blobClient.CreateBlockBlobFromReader(
+		c.containerName,
+		c.keyName,
+		uint64(len(data)),
+		bytes.NewReader(data),
+		headers,
+	)
 }
 
 func (c *AzureClient) Delete() error {
-	containerReference := c.blobClient.GetContainerReference(c.containerName)
-	blobReference := containerReference.GetBlobReference(c.keyName)
-	options := &mainStorage.DeleteBlobOptions{}
-
+	headers := map[string]string{}
 	if c.leaseID != "" {
-		options.LeaseID = c.leaseID
+		headers["x-ms-lease-id"] = c.leaseID
 	}
 
-	return blobReference.Delete(options)
+	return c.blobClient.DeleteBlob(c.containerName, c.keyName, headers)
 }

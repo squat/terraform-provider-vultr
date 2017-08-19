@@ -16,10 +16,7 @@ type StatePullCommand struct {
 }
 
 func (c *StatePullCommand) Run(args []string) int {
-	args, err := c.Meta.process(args, true)
-	if err != nil {
-		return 1
-	}
+	args = c.Meta.process(args, true)
 
 	cmdFlags := c.Meta.flagSet("state pull")
 	if err := cmdFlags.Parse(args); err != nil {
@@ -35,7 +32,7 @@ func (c *StatePullCommand) Run(args []string) int {
 	}
 
 	// Get the state
-	env := c.Workspace()
+	env := c.Env()
 	state, err := b.State(env)
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed to load state: %s", err))

@@ -16,10 +16,7 @@ type OutputCommand struct {
 }
 
 func (c *OutputCommand) Run(args []string) int {
-	args, err := c.Meta.process(args, false)
-	if err != nil {
-		return 1
-	}
+	args = c.Meta.process(args, false)
 
 	var module string
 	var jsonOutput bool
@@ -53,7 +50,7 @@ func (c *OutputCommand) Run(args []string) int {
 		return 1
 	}
 
-	env := c.Workspace()
+	env := c.Env()
 
 	// Get the state
 	stateStore, err := b.State(env)

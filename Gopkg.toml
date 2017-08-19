@@ -1,7 +1,0 @@
-[[constraint]]
-  branch = "master"
-  name = "github.com/JamesClonk/vultr"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/hashicorp/terraform"

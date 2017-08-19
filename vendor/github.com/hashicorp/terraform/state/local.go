@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	multierror "github.com/hashicorp/go-multierror"
@@ -17,8 +16,6 @@ import (
 
 // LocalState manages a state storage that is local to the filesystem.
 type LocalState struct {
-	mu sync.Mutex
-
 	// Path is the path to read the state from. PathOut is the path to
 	// write the state to. If PathOut is not specified, Path will be used.
 	// If PathOut already exists, it will be overwritten.
@@ -45,11 +42,8 @@ type LocalState struct {
 
 // SetState will force a specific state in-memory for this local state.
 func (s *LocalState) SetState(state *terraform.State) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.state = state.DeepCopy()
-	s.readState = state.DeepCopy()
+	s.state = state
+	s.readState = state
 }
 
 // StateReader impl.
@@ -64,9 +58,6 @@ func (s *LocalState) State() *terraform.State {
 //
 // StateWriter impl.
 func (s *LocalState) WriteState(state *terraform.State) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	if s.stateFileOut == nil {
 		if err := s.createStateFiles(); err != nil {
 			return nil
@@ -74,14 +65,7 @@ func (s *LocalState) WriteState(state *terraform.State) error {
 	}
 	defer s.stateFileOut.Sync()
 
-	s.state = state.DeepCopy() // don't want mutations before we actually get this written to disk
-
-	if s.readState != nil && s.state != nil {
-		// We don't trust callers to properly manage serials. Instead, we assume
-		// that a WriteState is always for the next version after what was
-		// most recently read.
-		s.state.Serial = s.readState.Serial
-	}
+	s.state = state
 
 	if _, err := s.stateFileOut.Seek(0, os.SEEK_SET); err != nil {
 		return err
@@ -95,9 +79,8 @@ func (s *LocalState) WriteState(state *terraform.State) error {
 		return nil
 	}
 
-	if !s.state.MarshalEqual(s.readState) {
-		s.state.Serial++
-	}
+	s.state.IncrementSerialMaybe(s.readState)
+	s.readState = s.state
 
 	if err := terraform.WriteState(s.state, s.stateFileOut); err != nil {
 		return err
@@ -116,9 +99,6 @@ func (s *LocalState) PersistState() error {
 
 // StateRefresher impl.
 func (s *LocalState) RefreshState() error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	var reader io.Reader
 	if !s.written {
 		// we haven't written a state file yet, so load from Path
@@ -155,15 +135,12 @@ func (s *LocalState) RefreshState() error {
 	}
 
 	s.state = state
-	s.readState = s.state.DeepCopy()
+	s.readState = state
 	return nil
 }
 
 // Lock implements a local filesystem state.Locker.
 func (s *LocalState) Lock(info *LockInfo) (string, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	if s.stateFileOut == nil {
 		if err := s.createStateFiles(); err != nil {
 			return "", err
@@ -193,9 +170,6 @@ func (s *LocalState) Lock(info *LockInfo) (string, error) {
 }
 
 func (s *LocalState) Unlock(id string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	if s.lockID == "" {
 		return fmt.Errorf("LocalState not locked")
 	}

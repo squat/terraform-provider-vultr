@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,12 +33,7 @@ func configDir() (string, error) {
 func homeDir() (string, error) {
 	// First prefer the HOME environmental variable
 	if home := os.Getenv("HOME"); home != "" {
-
-		// FIXME: homeDir gets called from globalPluginDirs during init, before
-		// the logging is setup.  We should move meta initializtion outside of
-		// init, but in the meantime we just need to silence this output.
-		//log.Printf("[DEBUG] Detected home directory from env var: %s", home)
-
+		log.Printf("[DEBUG] Detected home directory from env var: %s", home)
 		return home, nil
 	}
 

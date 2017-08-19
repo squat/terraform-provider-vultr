@@ -67,18 +67,13 @@ func TestAzureClientLease(t *testing.T) {
 	}
 	azureClient := client.(*AzureClient)
 
-	containerReference := azureClient.blobClient.GetContainerReference(azureClient.containerName)
-	blobReference := containerReference.GetBlobReference(azureClient.keyName)
-
 	// put empty blob so we can acquire lease against it
-	options := &mainStorage.PutBlobOptions{}
-	err = blobReference.CreateBlockBlob(options)
+	err = azureClient.blobClient.CreateBlockBlob(azureClient.containerName, azureClient.keyName)
 	if err != nil {
 		t.Fatalf("Error creating blob for leasing: %v", err)
 	}
 
-	leaseOptions := &mainStorage.LeaseOptions{}
-	_, err = blobReference.AcquireLease(-1, leaseID, leaseOptions)
+	_, err = azureClient.blobClient.AcquireLease(azureClient.containerName, azureClient.keyName, -1, leaseID)
 	if err != nil {
 		t.Fatalf("Error acquiring lease: %v", err)
 	}
@@ -167,12 +162,7 @@ func setup(t *testing.T, conf map[string]string) {
 		t.Fatalf("Error creating storage client for storage account %q: %s", conf["storage_account_name"], err)
 	}
 	blobClient := storageClient.GetBlobService()
-	containerName := conf["container_name"]
-	containerReference := blobClient.GetContainerReference(containerName)
-	options := &mainStorage.CreateContainerOptions{
-		Access: mainStorage.ContainerAccessTypePrivate,
-	}
-	_, err = containerReference.CreateIfNotExists(options)
+	_, err = blobClient.CreateContainerIfNotExists(conf["container_name"], mainStorage.ContainerAccessTypePrivate)
 	if err != nil {
 		t.Fatalf("Couldn't create container with name %s: %s.", conf["container_name"], err)
 	}

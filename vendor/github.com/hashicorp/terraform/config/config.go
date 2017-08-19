@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/hil"
 	"github.com/hashicorp/hil/ast"
 	"github.com/hashicorp/terraform/helper/hilmapstructure"
-	"github.com/hashicorp/terraform/plugin/discovery"
 	"github.com/mitchellh/reflectwalk"
 )
 
@@ -65,7 +64,6 @@ type Module struct {
 type ProviderConfig struct {
 	Name      string
 	Alias     string
-	Version   string
 	RawConfig *RawConfig
 }
 
@@ -240,33 +238,6 @@ func (r *Resource) Id() string {
 	}
 }
 
-// ProviderFullName returns the full name of the provider for this resource,
-// which may either be specified explicitly using the "provider" meta-argument
-// or implied by the prefix on the resource type name.
-func (r *Resource) ProviderFullName() string {
-	return ResourceProviderFullName(r.Type, r.Provider)
-}
-
-// ResourceProviderFullName returns the full (dependable) name of the
-// provider for a hypothetical resource with the given resource type and
-// explicit provider string. If the explicit provider string is empty then
-// the provider name is inferred from the resource type name.
-func ResourceProviderFullName(resourceType, explicitProvider string) string {
-	if explicitProvider != "" {
-		return explicitProvider
-	}
-
-	idx := strings.IndexRune(resourceType, '_')
-	if idx == -1 {
-		// If no underscores, the resource name is assumed to be
-		// also the provider name, e.g. if the provider exposes
-		// only a single resource of each type.
-		return resourceType
-	}
-
-	return resourceType[:idx]
-}
-
 // Validate does some basic semantic checking of the configuration.
 func (c *Config) Validate() error {
 	if c == nil {
@@ -378,8 +349,7 @@ func (c *Config) Validate() error {
 		}
 	}
 
-	// Check that providers aren't declared multiple times and that their
-	// version constraints, where present, are syntactically valid.
+	// Check that providers aren't declared multiple times.
 	providerSet := make(map[string]struct{})
 	for _, p := range c.ProviderConfigs {
 		name := p.FullName()
@@ -388,16 +358,6 @@ func (c *Config) Validate() error {
 				"provider.%s: declared multiple times, you can only declare a provider once",
 				name))
 			continue
-		}
-
-		if p.Version != "" {
-			_, err := discovery.ConstraintStr(p.Version).Parse()
-			if err != nil {
-				errs = append(errs, fmt.Errorf(
-					"provider.%s: invalid version constraint %q: %s",
-					name, p.Version, err,
-				))
-			}
 		}
 
 		providerSet[name] = struct{}{}

@@ -6,23 +6,22 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/communicator"
-	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 	cases := map[string]struct {
-		Config   map[string]interface{}
+		Config   *terraform.ResourceConfig
 		Commands map[string]bool
 	}{
 		"Sudo": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"node_name":  "nodename1",
 				"run_list":   []interface{}{"cookbook::recipe"},
 				"server_url": "https://chef.local",
 				"user_name":  "bob",
 				"user_key":   "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"sudo curl -LO https://www.chef.io/chef/install.sh": true,
@@ -32,7 +31,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 		},
 
 		"NoSudo": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"node_name":    "nodename1",
 				"prevent_sudo": true,
 				"run_list":     []interface{}{"cookbook::recipe"},
@@ -40,7 +39,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 				"server_url":   "https://chef.local",
 				"user_name":    "bob",
 				"user_key":     "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"curl -LO https://www.chef.io/chef/install.sh": true,
@@ -50,7 +49,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 		},
 
 		"HTTPProxy": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"http_proxy":   "http://proxy.local",
 				"node_name":    "nodename1",
 				"prevent_sudo": true,
@@ -58,7 +57,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 				"server_url":   "https://chef.local",
 				"user_name":    "bob",
 				"user_key":     "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"http_proxy='http://proxy.local' curl -LO https://www.chef.io/chef/install.sh": true,
@@ -68,7 +67,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 		},
 
 		"HTTPSProxy": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"https_proxy":  "https://proxy.local",
 				"node_name":    "nodename1",
 				"prevent_sudo": true,
@@ -76,7 +75,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 				"server_url":   "https://chef.local",
 				"user_name":    "bob",
 				"user_key":     "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"https_proxy='https://proxy.local' curl -LO https://www.chef.io/chef/install.sh": true,
@@ -86,7 +85,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 		},
 
 		"NoProxy": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"http_proxy":   "http://proxy.local",
 				"no_proxy":     []interface{}{"http://local.local", "http://local.org"},
 				"node_name":    "nodename1",
@@ -95,7 +94,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 				"server_url":   "https://chef.local",
 				"user_name":    "bob",
 				"user_key":     "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"http_proxy='http://proxy.local' no_proxy='http://local.local,http://local.org' " +
@@ -108,7 +107,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 		},
 
 		"Version": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"node_name":    "nodename1",
 				"prevent_sudo": true,
 				"run_list":     []interface{}{"cookbook::recipe"},
@@ -116,7 +115,7 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 				"user_name":    "bob",
 				"user_key":     "USER-KEY",
 				"version":      "11.18.6",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"curl -LO https://www.chef.io/chef/install.sh": true,
@@ -126,15 +125,14 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 		},
 	}
 
+	r := new(ResourceProvisioner)
 	o := new(terraform.MockUIOutput)
 	c := new(communicator.MockCommunicator)
 
 	for k, tc := range cases {
 		c.Commands = tc.Commands
 
-		p, err := decodeConfig(
-			schema.TestResourceDataRaw(t, Provisioner().(*schema.Provisioner).Schema, tc.Config),
-		)
+		p, err := r.decodeConfig(tc.Config)
 		if err != nil {
 			t.Fatalf("Error: %v", err)
 		}
@@ -150,12 +148,12 @@ func TestResourceProvider_linuxInstallChefClient(t *testing.T) {
 
 func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 	cases := map[string]struct {
-		Config   map[string]interface{}
+		Config   *terraform.ResourceConfig
 		Commands map[string]bool
 		Uploads  map[string]string
 	}{
 		"Sudo": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"ohai_hints": []interface{}{"test-fixtures/ohaihint.json"},
 				"node_name":  "nodename1",
 				"run_list":   []interface{}{"cookbook::recipe"},
@@ -163,7 +161,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 				"server_url": "https://chef.local",
 				"user_name":  "bob",
 				"user_key":   "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"sudo mkdir -p " + linuxConfDir:                                          true,
@@ -190,7 +188,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 		},
 
 		"NoSudo": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"node_name":    "nodename1",
 				"prevent_sudo": true,
 				"run_list":     []interface{}{"cookbook::recipe"},
@@ -198,7 +196,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 				"server_url":   "https://chef.local",
 				"user_name":    "bob",
 				"user_key":     "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"mkdir -p " + linuxConfDir: true,
@@ -213,7 +211,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 		},
 
 		"Proxy": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"http_proxy":      "http://proxy.local",
 				"https_proxy":     "https://proxy.local",
 				"no_proxy":        []interface{}{"http://local.local", "https://local.local"},
@@ -225,7 +223,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 				"ssl_verify_mode": "verify_none",
 				"user_name":       "bob",
 				"user_key":        "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"mkdir -p " + linuxConfDir: true,
@@ -240,7 +238,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 		},
 
 		"Attributes JSON": {
-			Config: map[string]interface{}{
+			Config: testConfig(t, map[string]interface{}{
 				"attributes_json": `{"key1":{"subkey1":{"subkey2a":["val1","val2","val3"],` +
 					`"subkey2b":{"subkey3":"value3"}}},"key2":"value2"}`,
 				"node_name":    "nodename1",
@@ -250,7 +248,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 				"server_url":   "https://chef.local",
 				"user_name":    "bob",
 				"user_key":     "USER-KEY",
-			},
+			}),
 
 			Commands: map[string]bool{
 				"mkdir -p " + linuxConfDir: true,
@@ -266,6 +264,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 		},
 	}
 
+	r := new(ResourceProvisioner)
 	o := new(terraform.MockUIOutput)
 	c := new(communicator.MockCommunicator)
 
@@ -273,9 +272,7 @@ func TestResourceProvider_linuxCreateConfigFiles(t *testing.T) {
 		c.Commands = tc.Commands
 		c.Uploads = tc.Uploads
 
-		p, err := decodeConfig(
-			schema.TestResourceDataRaw(t, Provisioner().(*schema.Provisioner).Schema, tc.Config),
-		)
+		p, err := r.decodeConfig(tc.Config)
 		if err != nil {
 			t.Fatalf("Error: %v", err)
 		}

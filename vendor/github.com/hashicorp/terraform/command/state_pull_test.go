@@ -21,8 +21,8 @@ func TestStatePull(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &StatePullCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -46,8 +46,8 @@ func TestStatePull_noState(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &StatePullCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 

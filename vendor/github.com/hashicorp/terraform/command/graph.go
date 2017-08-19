@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/backend"
-	"github.com/hashicorp/terraform/config"
 	"github.com/hashicorp/terraform/config/module"
 	"github.com/hashicorp/terraform/dag"
 	"github.com/hashicorp/terraform/terraform"
@@ -24,10 +23,7 @@ func (c *GraphCommand) Run(args []string) int {
 	var drawCycles bool
 	var graphTypeStr string
 
-	args, err := c.Meta.process(args, false)
-	if err != nil {
-		return 1
-	}
+	args = c.Meta.process(args, false)
 
 	cmdFlags := flag.NewFlagSet("graph", flag.ContinueOnError)
 	c.addModuleDepthFlag(cmdFlags, &moduleDepth)
@@ -66,15 +62,10 @@ func (c *GraphCommand) Run(args []string) int {
 		}
 	}
 
-	var conf *config.Config
-	if mod != nil {
-		conf = mod.Config()
-	}
-
 	// Load the backend
 	b, err := c.Backend(&BackendOpts{
-		Config: conf,
-		Plan:   plan,
+		ConfigPath: configPath,
+		Plan:       plan,
 	})
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed to load backend: %s", err))
@@ -86,12 +77,6 @@ func (c *GraphCommand) Run(args []string) int {
 	if !ok {
 		c.Ui.Error(ErrUnsupportedLocalOp)
 		return 1
-	}
-
-	// Building a graph may require config module to be present, even if it's
-	// empty.
-	if mod == nil && plan == nil {
-		mod = module.NewEmptyTree()
 	}
 
 	// Build the operation

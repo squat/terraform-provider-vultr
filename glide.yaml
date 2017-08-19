@@ -1,0 +1,13 @@
+package: github.com/squat/terraform-provider-vultr
+import:
+- package: github.com/JamesClonk/vultr
+  subpackages:
+  - lib
+- package: github.com/fatih/structs
+- package: github.com/hashicorp/terraform
+  subpackages:
+  - helper/mutexkv
+  - helper/resource
+  - helper/schema
+  - plugin
+  - terraform

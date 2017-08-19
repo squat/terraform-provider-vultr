@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform/backend"
 	"github.com/hashicorp/terraform/command/clistate"
-	"github.com/hashicorp/terraform/command/format"
 	"github.com/hashicorp/terraform/config/module"
 	"github.com/hashicorp/terraform/state"
 	"github.com/hashicorp/terraform/terraform"
@@ -90,72 +89,9 @@ func (b *Local) opApply(
 
 		// Perform the plan
 		log.Printf("[INFO] backend/local: apply calling Plan")
-		plan, err := tfCtx.Plan()
-		if err != nil {
+		if _, err := tfCtx.Plan(); err != nil {
 			runningOp.Err = errwrap.Wrapf("Error running plan: {{err}}", err)
 			return
-		}
-
-		trivialPlan := plan.Diff == nil || plan.Diff.Empty()
-		hasUI := op.UIOut != nil && op.UIIn != nil
-		if hasUI && ((op.Destroy && !op.DestroyForce) ||
-			(!op.Destroy && !op.AutoApprove && !trivialPlan)) {
-			var desc, query string
-			if op.Destroy {
-				// Default destroy message
-				desc = "Terraform will delete all your managed infrastructure, as shown above.\n" +
-					"There is no undo. Only 'yes' will be accepted to confirm."
-
-				// If targets are specified, list those to user
-				if op.Targets != nil {
-					var descBuffer bytes.Buffer
-					descBuffer.WriteString("Terraform will delete the following infrastructure:\n")
-					for _, target := range op.Targets {
-						descBuffer.WriteString("\t")
-						descBuffer.WriteString(target)
-						descBuffer.WriteString("\n")
-					}
-					descBuffer.WriteString("There is no undo. Only 'yes' will be accepted to confirm")
-					desc = descBuffer.String()
-				}
-				query = "Do you really want to destroy?"
-			} else {
-				desc = "Terraform will apply the changes described above.\n" +
-					"Only 'yes' will be accepted to approve."
-				query = "Do you want to apply these changes?"
-			}
-
-			if !trivialPlan {
-				// Display the plan of what we are going to apply/destroy.
-				if op.Destroy {
-					op.UIOut.Output("\n" + strings.TrimSpace(approveDestroyPlanHeader) + "\n")
-				} else {
-					op.UIOut.Output("\n" + strings.TrimSpace(approvePlanHeader) + "\n")
-				}
-				op.UIOut.Output(format.Plan(&format.PlanOpts{
-					Plan:        plan,
-					Color:       b.Colorize(),
-					ModuleDepth: -1,
-				}))
-			}
-
-			v, err := op.UIIn.Input(&terraform.InputOpts{
-				Id:          "approve",
-				Query:       query,
-				Description: desc,
-			})
-			if err != nil {
-				runningOp.Err = errwrap.Wrapf("Error asking for approval: {{err}}", err)
-				return
-			}
-			if v != "yes" {
-				if op.Destroy {
-					runningOp.Err = errors.New("Destroy cancelled.")
-				} else {
-					runningOp.Err = errors.New("Apply cancelled.")
-				}
-				return
-			}
 		}
 	}
 
@@ -188,17 +124,6 @@ func (b *Local) opApply(
 	case <-ctx.Done():
 		if b.CLI != nil {
 			b.CLI.Output("stopping apply operation...")
-		}
-
-		// try to force a PersistState just in case the process is terminated
-		// before we can complete.
-		if err := opState.PersistState(); err != nil {
-			// We can't error out from here, but warn the user if there was an error.
-			// If this isn't transient, we will catch it again below, and
-			// attempt to save the state another way.
-			if b.CLI != nil {
-				b.CLI.Error(fmt.Sprintf(earlyStateWriteErrorFmt, err))
-			}
 		}
 
 		// Stop execution
@@ -250,8 +175,7 @@ func (b *Local) opApply(
 				countHook.Removed)))
 		}
 
-		// only show the state file help message if the state is local.
-		if (countHook.Added > 0 || countHook.Changed > 0) && b.StateOutPath != "" {
+		if countHook.Added > 0 || countHook.Changed > 0 {
 			b.CLI.Output(b.Colorize().Color(fmt.Sprintf(
 				"[reset]\n"+
 					"The state of your infrastructure has been saved to the path\n"+
@@ -345,25 +269,4 @@ For resources that support import, it is possible to recover by manually
 importing each resource using its id from the target system.
 
 This is a serious bug in Terraform and should be reported.
-`
-
-const earlyStateWriteErrorFmt = `Error saving current state: %s
-
-Terraform encountered an error attempting to save the state before canceling
-the current operation. Once the operation is complete another attempt will be
-made to save the final state.
-`
-
-const approvePlanHeader = `
-The Terraform execution plan has been generated and is shown below.
-Resources are shown in alphabetical order for quick scanning. Green resources
-will be created (or destroyed and then created if an existing resource
-exists), yellow resources are being changed in-place, and red resources
-will be destroyed. Cyan entries are data sources to be read.
-`
-
-const approveDestroyPlanHeader = `
-The Terraform destroy plan has been generated and is shown below.
-Resources are shown in alphabetical order for quick scanning.
-Resources shown in red will be destroyed.
 `

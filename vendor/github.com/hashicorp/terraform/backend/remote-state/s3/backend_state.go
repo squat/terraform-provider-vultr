@@ -14,10 +14,16 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
+const (
+	// This will be used as directory name, the odd looking colon is simply to
+	// reduce the chance of name conflicts with existing objects.
+	keyEnvPrefix = "env:"
+)
+
 func (b *Backend) States() ([]string, error) {
 	params := &s3.ListObjectsInput{
 		Bucket: &b.bucketName,
-		Prefix: aws.String(b.workspaceKeyPrefix + "/"),
+		Prefix: aws.String(keyEnvPrefix + "/"),
 	}
 
 	resp, err := b.s3Client.ListObjects(params)
@@ -47,7 +53,7 @@ func (b *Backend) keyEnv(key string) string {
 	}
 
 	// shouldn't happen since we listed by prefix
-	if parts[0] != b.workspaceKeyPrefix {
+	if parts[0] != keyEnvPrefix {
 		return ""
 	}
 
@@ -64,16 +70,20 @@ func (b *Backend) DeleteState(name string) error {
 		return fmt.Errorf("can't delete default state")
 	}
 
-	client, err := b.remoteClient(name)
+	params := &s3.DeleteObjectInput{
+		Bucket: &b.bucketName,
+		Key:    aws.String(b.path(name)),
+	}
+
+	_, err := b.s3Client.DeleteObject(params)
 	if err != nil {
 		return err
 	}
 
-	return client.Delete()
+	return nil
 }
 
-// get a remote client configured for this state
-func (b *Backend) remoteClient(name string) (*RemoteClient, error) {
+func (b *Backend) State(name string) (state.State, error) {
 	if name == "" {
 		return nil, errors.New("missing state name")
 	}
@@ -86,19 +96,11 @@ func (b *Backend) remoteClient(name string) (*RemoteClient, error) {
 		serverSideEncryption: b.serverSideEncryption,
 		acl:                  b.acl,
 		kmsKeyID:             b.kmsKeyID,
-		ddbTable:             b.ddbTable,
-	}
-
-	return client, nil
-}
-
-func (b *Backend) State(name string) (state.State, error) {
-	client, err := b.remoteClient(name)
-	if err != nil {
-		return nil, err
+		lockTable:            b.lockTable,
 	}
 
 	stateMgr := &remote.State{Client: client}
+
 	// Check to see if this state already exists.
 	// If we're trying to force-unlock a state, we can't take the lock before
 	// fetching the state. If the state doesn't exist, we have to assume this
@@ -177,7 +179,7 @@ func (b *Backend) path(name string) string {
 		return b.keyName
 	}
 
-	return strings.Join([]string{b.workspaceKeyPrefix, name, b.keyName}, "/")
+	return strings.Join([]string{keyEnvPrefix, name, b.keyName}, "/")
 }
 
 const errStateUnlock = `

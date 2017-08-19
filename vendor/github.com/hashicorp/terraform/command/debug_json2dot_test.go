@@ -30,8 +30,8 @@ func TestDebugJSON2Dot(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &DebugJSON2DotCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(testProvider()),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(testProvider()),
+			Ui:          ui,
 		},
 	}
 

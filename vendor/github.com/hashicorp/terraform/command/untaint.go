@@ -17,10 +17,7 @@ type UntaintCommand struct {
 }
 
 func (c *UntaintCommand) Run(args []string) int {
-	args, err := c.Meta.process(args, false)
-	if err != nil {
-		return 1
-	}
+	args = c.Meta.process(args, false)
 
 	var allowMissing bool
 	var module string
@@ -60,7 +57,7 @@ func (c *UntaintCommand) Run(args []string) int {
 	}
 
 	// Get the state
-	env := c.Workspace()
+	env := c.Env()
 	st, err := b.State(env)
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed to load state: %s", err))

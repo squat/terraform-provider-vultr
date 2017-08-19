@@ -117,15 +117,7 @@ func (b *PlanGraphBuilder) Steps() []GraphTransformer {
 		&CountBoundaryTransformer{},
 
 		// Target
-		&TargetsTransformer{
-			Targets: b.Targets,
-
-			// Resource nodes from config have not yet been expanded for
-			// "count", so we must apply targeting without indices. Exact
-			// targeting will be dealt with later when these resources
-			// DynamicExpand.
-			IgnoreIndices: true,
-		},
+		&TargetsTransformer{Targets: b.Targets},
 
 		// Close opened plugin connections
 		&CloseProviderTransformer{},

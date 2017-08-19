@@ -317,13 +317,9 @@ func (i *Interpolater) valueTerraformVar(
 	n string,
 	v *config.TerraformVariable,
 	result map[string]ast.Variable) error {
-
-	// "env" is supported for backward compatibility, but it's deprecated and
-	// so we won't advertise it as being allowed in the error message. It will
-	// be removed in a future version of Terraform.
-	if v.Field != "workspace" && v.Field != "env" {
+	if v.Field != "env" {
 		return fmt.Errorf(
-			"%s: only supported key for 'terraform.X' interpolations is 'workspace'", n)
+			"%s: only supported key for 'terraform.X' interpolations is 'env'", n)
 	}
 
 	if i.Meta == nil {

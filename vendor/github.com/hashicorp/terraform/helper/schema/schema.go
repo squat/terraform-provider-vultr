@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -662,23 +661,12 @@ func (m schemaMap) InternalValidate(topSchemaMap schemaMap) error {
 		if v.ValidateFunc != nil {
 			switch v.Type {
 			case TypeList, TypeSet:
-				return fmt.Errorf("%s: ValidateFunc is not yet supported on lists or sets.", k)
-			}
-		}
-
-		if v.Deprecated == "" && v.Removed == "" {
-			if !isValidFieldName(k) {
-				return fmt.Errorf("%s: Field name may only contain lowercase alphanumeric characters & underscores.", k)
+				return fmt.Errorf("ValidateFunc is not yet supported on lists or sets.")
 			}
 		}
 	}
 
 	return nil
-}
-
-func isValidFieldName(name string) bool {
-	re := regexp.MustCompile("^[a-z0-9_]+$")
-	return re.MatchString(name)
 }
 
 func (m schemaMap) diff(

@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hashicorp/terraform/config"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/colorstring"
 )
@@ -59,27 +58,18 @@ func formatPlanModuleExpand(
 		return
 	}
 
-	var modulePath []string
+	var moduleName string
 	if !m.IsRoot() {
-		modulePath = m.Path[1:]
+		moduleName = fmt.Sprintf("module.%s", strings.Join(m.Path[1:], "."))
 	}
 
 	// We want to output the resources in sorted order to make things
 	// easier to scan through, so get all the resource names and sort them.
 	names := make([]string, 0, len(m.Resources))
-	addrs := map[string]*terraform.ResourceAddress{}
-	for name := range m.Resources {
+	for name, _ := range m.Resources {
 		names = append(names, name)
-		var err error
-		addrs[name], err = terraform.ParseResourceAddressForInstanceDiff(modulePath, name)
-		if err != nil {
-			// should never happen; indicates invalid diff
-			panic("invalid resource address in diff")
-		}
 	}
-	sort.Slice(names, func(i, j int) bool {
-		return addrs[names[i]].Less(addrs[names[j]])
-	})
+	sort.Strings(names)
 
 	// Go through each sorted name and start building the output
 	for _, name := range names {
@@ -88,23 +78,25 @@ func formatPlanModuleExpand(
 			continue
 		}
 
-		addr := addrs[name]
-		addrStr := addr.String()
-		dataSource := addr.Mode == config.DataResourceMode
+		dataSource := strings.HasPrefix(name, "data.")
+
+		if moduleName != "" {
+			name = moduleName + "." + name
+		}
 
 		// Determine the color for the text (green for adding, yellow
 		// for change, red for delete), and symbol, and output the
 		// resource header.
 		color := "yellow"
-		symbol := "  ~"
+		symbol := "~"
 		oldValues := true
 		switch rdiff.ChangeType() {
 		case terraform.DiffDestroyCreate:
-			color = "yellow"
-			symbol = "[red]-[reset]/[green]+[reset][yellow]"
+			color = "green"
+			symbol = "-/+"
 		case terraform.DiffCreate:
 			color = "green"
-			symbol = "  +"
+			symbol = "+"
 			oldValues = false
 
 			// If we're "creating" a data resource then we'll present it
@@ -114,12 +106,12 @@ func formatPlanModuleExpand(
 			// to work with, so we need to cheat and exploit knowledge of the
 			// naming scheme for data resources.
 			if dataSource {
-				symbol = " <="
+				symbol = "<="
 				color = "cyan"
 			}
 		case terraform.DiffDestroy:
 			color = "red"
-			symbol = "  -"
+			symbol = "-"
 		}
 
 		var extraAttr []string
@@ -133,13 +125,10 @@ func formatPlanModuleExpand(
 		if len(extraAttr) > 0 {
 			extraStr = fmt.Sprintf(" (%s)", strings.Join(extraAttr, ", "))
 		}
-		if rdiff.ChangeType() == terraform.DiffDestroyCreate {
-			extraStr = extraStr + opts.Color.Color(" [red][bold](new resource required)")
-		}
 
 		buf.WriteString(opts.Color.Color(fmt.Sprintf(
 			"[%s]%s %s%s\n",
-			color, symbol, addrStr, extraStr)))
+			color, symbol, name, extraStr)))
 
 		// Get all the attributes that are changing, and sort them. Also
 		// determine the longest key so that we can align them all.
@@ -186,7 +175,7 @@ func formatPlanModuleExpand(
 					u = attrDiff.Old
 				}
 				buf.WriteString(fmt.Sprintf(
-					"      %s:%s %#v => %#v%s\n",
+					"    %s:%s %#v => %#v%s\n",
 					attrK,
 					strings.Repeat(" ", keyLen-len(attrK)),
 					u,
@@ -194,7 +183,7 @@ func formatPlanModuleExpand(
 					updateMsg))
 			} else {
 				buf.WriteString(fmt.Sprintf(
-					"      %s:%s %#v%s\n",
+					"    %s:%s %#v%s\n",
 					attrK,
 					strings.Repeat(" ", keyLen-len(attrK)),
 					v,

@@ -1,16 +1,17 @@
+// +build !core
+
 package command
 
 import "testing"
 
-// providers are all external for now
-//func TestInternalPlugin_InternalProviders(t *testing.T) {
-//    // Note this is a randomish sample and does not check for all plugins
-//    for _, name := range []string{"atlas", "consul", "docker", "template"} {
-//        if _, ok := InternalProviders[name]; !ok {
-//            t.Errorf("Expected to find %s in InternalProviders", name)
-//        }
-//    }
-//}
+func TestInternalPlugin_InternalProviders(t *testing.T) {
+	// Note this is a randomish sample and does not check for all plugins
+	for _, name := range []string{"atlas", "consul", "docker", "template"} {
+		if _, ok := InternalProviders[name]; !ok {
+			t.Errorf("Expected to find %s in InternalProviders", name)
+		}
+	}
+}
 
 func TestInternalPlugin_InternalProvisioners(t *testing.T) {
 	for _, name := range []string{"chef", "file", "local-exec", "remote-exec"} {

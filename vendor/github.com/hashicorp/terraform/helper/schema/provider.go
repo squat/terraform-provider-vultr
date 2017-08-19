@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/hashicorp/terraform/config"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -90,13 +89,6 @@ func (p *Provider) InternalValidate() error {
 		validationErrors = multierror.Append(validationErrors, err)
 	}
 
-	// Provider-specific checks
-	for k, _ := range sm {
-		if isReservedProviderFieldName(k) {
-			return fmt.Errorf("%s is a reserved field name for a provider", k)
-		}
-	}
-
 	for k, r := range p.ResourcesMap {
 		if err := r.InternalValidate(nil, true); err != nil {
 			validationErrors = multierror.Append(validationErrors, fmt.Errorf("resource %s: %s", k, err))
@@ -110,15 +102,6 @@ func (p *Provider) InternalValidate() error {
 	}
 
 	return validationErrors
-}
-
-func isReservedProviderFieldName(name string) bool {
-	for _, reservedName := range config.ReservedProviderFields {
-		if name == reservedName {
-			return true
-		}
-	}
-	return false
 }
 
 // Meta returns the metadata associated with this provider that was

@@ -41,12 +41,6 @@ type TargetsTransformer struct {
 	// that already have the targets parsed
 	ParsedTargets []ResourceAddress
 
-	// If set, the index portions of resource addresses will be ignored
-	// for comparison. This is used when transforming a graph where
-	// counted resources have not yet been expanded, since otherwise
-	// the unexpanded nodes (which never have indices) would not match.
-	IgnoreIndices bool
-
 	// Set to true when we're in a `terraform destroy` or a
 	// `terraform plan -destroy`
 	Destroy bool
@@ -205,12 +199,7 @@ func (t *TargetsTransformer) nodeIsTarget(
 
 	addr := r.ResourceAddr()
 	for _, targetAddr := range addrs {
-		if t.IgnoreIndices {
-			// targetAddr is not a pointer, so we can safely mutate it without
-			// interfering with references elsewhere.
-			targetAddr.Index = -1
-		}
-		if targetAddr.Contains(addr) {
+		if targetAddr.Equals(addr) {
 			return true
 		}
 	}

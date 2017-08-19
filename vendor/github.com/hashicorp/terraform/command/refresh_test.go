@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/copy"
-	"github.com/hashicorp/terraform/state"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/cli"
 )
@@ -23,8 +22,8 @@ func TestRefresh(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -72,8 +71,8 @@ func TestRefresh_empty(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -106,8 +105,8 @@ func TestRefresh_lockedState(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -146,8 +145,8 @@ func TestRefresh_cwd(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -194,11 +193,15 @@ func TestRefresh_defaultState(t *testing.T) {
 	}
 	statePath := filepath.Join(td, DefaultStateFilename)
 
-	localState := &state.LocalState{Path: statePath}
-	if err := localState.WriteState(originalState); err != nil {
-		t.Fatal(err)
+	f, err := os.Create(statePath)
+	if err != nil {
+		t.Fatalf("err: %s", err)
 	}
-	serial := localState.State().Serial
+	err = terraform.WriteState(originalState, f)
+	f.Close()
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
 
 	// Change to that directory
 	cwd, err := os.Getwd()
@@ -214,8 +217,8 @@ func TestRefresh_defaultState(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -233,7 +236,16 @@ func TestRefresh_defaultState(t *testing.T) {
 		t.Fatal("refresh should be called")
 	}
 
-	newState := testStateRead(t, statePath)
+	f, err = os.Open(statePath)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	newState, err := terraform.ReadState(f)
+	f.Close()
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
 
 	actual := newState.RootModule().Resources["test_instance.foo"].Primary
 	expected := p.RefreshReturn
@@ -242,11 +254,16 @@ func TestRefresh_defaultState(t *testing.T) {
 		t.Fatalf("bad:\n%#v", actual)
 	}
 
-	if newState.Serial <= serial {
-		t.Fatalf("serial not incremented during refresh. previous:%d, current:%d", serial, newState.Serial)
+	f, err = os.Open(statePath + DefaultBackupExtension)
+	if err != nil {
+		t.Fatalf("err: %s", err)
 	}
 
-	backupState := testStateRead(t, statePath+DefaultBackupExtension)
+	backupState, err := terraform.ReadState(f)
+	f.Close()
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
 
 	actual = backupState.RootModule().Resources["test_instance.foo"].Primary
 	expected = originalState.RootModule().Resources["test_instance.foo"].Primary
@@ -273,8 +290,8 @@ func TestRefresh_futureState(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -316,8 +333,8 @@ func TestRefresh_pastState(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -375,8 +392,8 @@ func TestRefresh_outPath(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -450,8 +467,8 @@ func TestRefresh_var(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -480,8 +497,8 @@ func TestRefresh_varFile(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -515,8 +532,8 @@ func TestRefresh_varFileDefault(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -565,8 +582,8 @@ func TestRefresh_varsUnset(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -605,8 +622,8 @@ func TestRefresh_backup(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -690,8 +707,8 @@ func TestRefresh_disableBackup(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 
@@ -759,8 +776,8 @@ func TestRefresh_displaysOutputs(t *testing.T) {
 	ui := new(cli.MockUi)
 	c := &RefreshCommand{
 		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(p),
-			Ui:               ui,
+			ContextOpts: testCtxConfig(p),
+			Ui:          ui,
 		},
 	}
 

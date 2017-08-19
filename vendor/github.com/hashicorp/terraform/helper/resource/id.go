@@ -1,17 +1,21 @@
 package resource
 
 import (
+	"crypto/rand"
 	"fmt"
-	"strings"
+	"math/big"
 	"sync"
-	"time"
 )
 
 const UniqueIdPrefix = `terraform-`
 
-// idCounter is a monotonic counter for generating ordered unique ids.
+// idCounter is a randomly seeded monotonic counter for generating ordered
+// unique ids.  It uses a big.Int so we can easily increment a long numeric
+// string.  The max possible hex value here with 12 random bytes is
+// "01000000000000000000000000", so there's no chance of rollover during
+// operation.
 var idMutex sync.Mutex
-var idCounter uint32
+var idCounter = big.NewInt(0).SetBytes(randomBytes(12))
 
 // Helper for a resource to generate a unique identifier w/ default prefix
 func UniqueId() string {
@@ -21,20 +25,15 @@ func UniqueId() string {
 // Helper for a resource to generate a unique identifier w/ given prefix
 //
 // After the prefix, the ID consists of an incrementing 26 digit value (to match
-// previous timestamp output).  After the prefix, the ID consists of a timestamp
-// and an incrementing 8 hex digit value The timestamp means that multiple IDs
-// created with the same prefix will sort in the order of their creation, even
-// across multiple terraform executions, as long as the clock is not turned back
-// between calls, and as long as any given terraform execution generates fewer
-// than 4 billion IDs.
+// previous timestamp output).
 func PrefixedUniqueId(prefix string) string {
-	// Be precise to 4 digits of fractional seconds, but remove the dot before the
-	// fractional seconds.
-	timestamp := strings.Replace(
-		time.Now().UTC().Format("20060102150405.0000"), ".", "", 1)
-
 	idMutex.Lock()
 	defer idMutex.Unlock()
-	idCounter++
-	return fmt.Sprintf("%s%s%08x", prefix, timestamp, idCounter)
+	return fmt.Sprintf("%s%026x", prefix, idCounter.Add(idCounter, big.NewInt(1)))
+}
+
+func randomBytes(n int) []byte {
+	b := make([]byte, n)
+	rand.Read(b)
+	return b
 }

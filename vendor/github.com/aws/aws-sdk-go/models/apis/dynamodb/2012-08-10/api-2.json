@@ -4,11 +4,12 @@
     "apiVersion":"2012-08-10",
     "endpointPrefix":"dynamodb",
     "jsonVersion":"1.0",
+    "protocol":"json",
     "serviceAbbreviation":"DynamoDB",
     "serviceFullName":"Amazon DynamoDB",
     "signatureVersion":"v4",
     "targetPrefix":"DynamoDB_20120810",
-    "protocol":"json"
+    "uid":"dynamodb-2012-08-10"
   },
   "operations":{
     "BatchGetItem":{
@@ -20,19 +21,9 @@
       "input":{"shape":"BatchGetItemInput"},
       "output":{"shape":"BatchGetItemOutput"},
       "errors":[
-        {
-          "shape":"ProvisionedThroughputExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "BatchWriteItem":{
@@ -44,23 +35,10 @@
       "input":{"shape":"BatchWriteItemInput"},
       "output":{"shape":"BatchWriteItemOutput"},
       "errors":[
-        {
-          "shape":"ProvisionedThroughputExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"ItemCollectionSizeLimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ItemCollectionSizeLimitExceededException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "CreateTable":{
@@ -72,19 +50,9 @@
       "input":{"shape":"CreateTableInput"},
       "output":{"shape":"CreateTableOutput"},
       "errors":[
-        {
-          "shape":"ResourceInUseException",
-          "exception":true
-        },
-        {
-          "shape":"LimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceInUseException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "DeleteItem":{
@@ -96,27 +64,11 @@
       "input":{"shape":"DeleteItemInput"},
       "output":{"shape":"DeleteItemOutput"},
       "errors":[
-        {
-          "shape":"ConditionalCheckFailedException",
-          "exception":true
-        },
-        {
-          "shape":"ProvisionedThroughputExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"ItemCollectionSizeLimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ConditionalCheckFailedException"},
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ItemCollectionSizeLimitExceededException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "DeleteTable":{
@@ -128,23 +80,22 @@
       "input":{"shape":"DeleteTableInput"},
       "output":{"shape":"DeleteTableOutput"},
       "errors":[
-        {
-          "shape":"ResourceInUseException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"LimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalServerError"}
+      ]
+    },
+    "DescribeLimits":{
+      "name":"DescribeLimits",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeLimitsInput"},
+      "output":{"shape":"DescribeLimitsOutput"},
+      "errors":[
+        {"shape":"InternalServerError"}
       ]
     },
     "DescribeTable":{
@@ -156,15 +107,21 @@
       "input":{"shape":"DescribeTableInput"},
       "output":{"shape":"DescribeTableOutput"},
       "errors":[
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"}
+      ]
+    },
+    "DescribeTimeToLive":{
+      "name":"DescribeTimeToLive",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeTimeToLiveInput"},
+      "output":{"shape":"DescribeTimeToLiveOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "GetItem":{
@@ -176,19 +133,9 @@
       "input":{"shape":"GetItemInput"},
       "output":{"shape":"GetItemOutput"},
       "errors":[
-        {
-          "shape":"ProvisionedThroughputExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "ListTables":{
@@ -200,11 +147,20 @@
       "input":{"shape":"ListTablesInput"},
       "output":{"shape":"ListTablesOutput"},
       "errors":[
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"InternalServerError"}
+      ]
+    },
+    "ListTagsOfResource":{
+      "name":"ListTagsOfResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsOfResourceInput"},
+      "output":{"shape":"ListTagsOfResourceOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "PutItem":{
@@ -216,27 +172,11 @@
       "input":{"shape":"PutItemInput"},
       "output":{"shape":"PutItemOutput"},
       "errors":[
-        {
-          "shape":"ConditionalCheckFailedException",
-          "exception":true
-        },
-        {
-          "shape":"ProvisionedThroughputExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"ItemCollectionSizeLimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ConditionalCheckFailedException"},
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ItemCollectionSizeLimitExceededException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "Query":{
@@ -248,19 +188,9 @@
       "input":{"shape":"QueryInput"},
       "output":{"shape":"QueryOutput"},
       "errors":[
-        {
-          "shape":"ProvisionedThroughputExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "Scan":{
@@ -272,19 +202,37 @@
       "input":{"shape":"ScanInput"},
       "output":{"shape":"ScanOutput"},
       "errors":[
-        {
-          "shape":"ProvisionedThroughputExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"}
+      ]
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceInput"},
+      "errors":[
+        {"shape":"LimitExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"},
+        {"shape":"ResourceInUseException"}
+      ]
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "errors":[
+        {"shape":"LimitExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerError"},
+        {"shape":"ResourceInUseException"}
       ]
     },
     "UpdateItem":{
@@ -296,27 +244,11 @@
       "input":{"shape":"UpdateItemInput"},
       "output":{"shape":"UpdateItemOutput"},
       "errors":[
-        {
-          "shape":"ConditionalCheckFailedException",
-          "exception":true
-        },
-        {
-          "shape":"ProvisionedThroughputExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"ItemCollectionSizeLimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ConditionalCheckFailedException"},
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ItemCollectionSizeLimitExceededException"},
+        {"shape":"InternalServerError"}
       ]
     },
     "UpdateTable":{
@@ -328,23 +260,25 @@
       "input":{"shape":"UpdateTableInput"},
       "output":{"shape":"UpdateTableOutput"},
       "errors":[
-        {
-          "shape":"ResourceInUseException",
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"LimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"InternalServerError",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalServerError"}
+      ]
+    },
+    "UpdateTimeToLive":{
+      "name":"UpdateTimeToLive",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateTimeToLiveInput"},
+      "output":{"shape":"UpdateTimeToLiveOutput"},
+      "errors":[
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalServerError"}
       ]
     }
   },
@@ -438,8 +372,8 @@
       "type":"map",
       "key":{"shape":"TableName"},
       "value":{"shape":"KeysAndAttributes"},
-      "min":1,
-      "max":100
+      "max":100,
+      "min":1
     },
     "BatchGetResponseMap":{
       "type":"map",
@@ -467,8 +401,8 @@
       "type":"map",
       "key":{"shape":"TableName"},
       "value":{"shape":"WriteRequests"},
-      "min":1,
-      "max":25
+      "max":25,
+      "min":1
     },
     "BinaryAttributeValue":{"type":"blob"},
     "BinarySetAttributeValue":{
@@ -634,6 +568,20 @@
         "TableDescription":{"shape":"TableDescription"}
       }
     },
+    "DescribeLimitsInput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DescribeLimitsOutput":{
+      "type":"structure",
+      "members":{
+        "AccountMaxReadCapacityUnits":{"shape":"PositiveLongObject"},
+        "AccountMaxWriteCapacityUnits":{"shape":"PositiveLongObject"},
+        "TableMaxReadCapacityUnits":{"shape":"PositiveLongObject"},
+        "TableMaxWriteCapacityUnits":{"shape":"PositiveLongObject"}
+      }
+    },
     "DescribeTableInput":{
       "type":"structure",
       "required":["TableName"],
@@ -645,6 +593,19 @@
       "type":"structure",
       "members":{
         "Table":{"shape":"TableDescription"}
+      }
+    },
+    "DescribeTimeToLiveInput":{
+      "type":"structure",
+      "required":["TableName"],
+      "members":{
+        "TableName":{"shape":"TableName"}
+      }
+    },
+    "DescribeTimeToLiveOutput":{
+      "type":"structure",
+      "members":{
+        "TimeToLiveDescription":{"shape":"TimeToLiveDescription"}
       }
     },
     "ErrorMessage":{"type":"string"},
@@ -753,8 +714,8 @@
     },
     "IndexName":{
       "type":"string",
-      "min":3,
       "max":255,
+      "min":3,
       "pattern":"[a-zA-Z0-9_.-]+"
     },
     "IndexStatus":{
@@ -826,19 +787,19 @@
     "KeyList":{
       "type":"list",
       "member":{"shape":"Key"},
-      "min":1,
-      "max":100
+      "max":100,
+      "min":1
     },
     "KeySchema":{
       "type":"list",
       "member":{"shape":"KeySchemaElement"},
-      "min":1,
-      "max":2
+      "max":2,
+      "min":1
     },
     "KeySchemaAttributeName":{
       "type":"string",
-      "min":1,
-      "max":255
+      "max":255,
+      "min":1
     },
     "KeySchemaElement":{
       "type":"structure",
@@ -889,14 +850,29 @@
     },
     "ListTablesInputLimit":{
       "type":"integer",
-      "min":1,
-      "max":100
+      "max":100,
+      "min":1
     },
     "ListTablesOutput":{
       "type":"structure",
       "members":{
         "TableNames":{"shape":"TableNameList"},
         "LastEvaluatedTableName":{"shape":"TableName"}
+      }
+    },
+    "ListTagsOfResourceInput":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{"shape":"ResourceArnString"},
+        "NextToken":{"shape":"NextTokenString"}
+      }
+    },
+    "ListTagsOfResourceOutput":{
+      "type":"structure",
+      "members":{
+        "Tags":{"shape":"TagList"},
+        "NextToken":{"shape":"NextTokenString"}
       }
     },
     "LocalSecondaryIndex":{
@@ -937,16 +913,17 @@
       "key":{"shape":"AttributeName"},
       "value":{"shape":"AttributeValue"}
     },
+    "NextTokenString":{"type":"string"},
     "NonKeyAttributeName":{
       "type":"string",
-      "min":1,
-      "max":255
+      "max":255,
+      "min":1
     },
     "NonKeyAttributeNameList":{
       "type":"list",
       "member":{"shape":"NonKeyAttributeName"},
-      "min":1,
-      "max":20
+      "max":20,
+      "min":1
     },
     "NullAttributeValue":{"type":"boolean"},
     "NumberAttributeValue":{"type":"string"},
@@ -1078,6 +1055,11 @@
         "ConsumedCapacity":{"shape":"ConsumedCapacity"}
       }
     },
+    "ResourceArnString":{
+      "type":"string",
+      "max":1283,
+      "min":1
+    },
     "ResourceInUseException":{
       "type":"structure",
       "members":{
@@ -1159,13 +1141,13 @@
     },
     "ScanSegment":{
       "type":"integer",
-      "min":0,
-      "max":999999
+      "max":999999,
+      "min":0
     },
     "ScanTotalSegments":{
       "type":"integer",
-      "min":1,
-      "max":1000000
+      "max":1000000,
+      "min":1
     },
     "SecondaryIndexesCapacityMap":{
       "type":"map",
@@ -1183,8 +1165,8 @@
     },
     "StreamArn":{
       "type":"string",
-      "min":37,
-      "max":1024
+      "max":1024,
+      "min":37
     },
     "StreamEnabled":{"type":"boolean"},
     "StreamSpecification":{
@@ -1230,8 +1212,8 @@
     },
     "TableName":{
       "type":"string",
-      "min":3,
       "max":255,
+      "min":3,
       "pattern":"[a-zA-Z0-9_.-]+"
     },
     "TableNameList":{
@@ -1246,6 +1228,90 @@
         "DELETING",
         "ACTIVE"
       ]
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{"shape":"TagKeyString"},
+        "Value":{"shape":"TagValueString"}
+      }
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKeyString"}
+    },
+    "TagKeyString":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"}
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{"shape":"ResourceArnString"},
+        "Tags":{"shape":"TagList"}
+      }
+    },
+    "TagValueString":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TimeToLiveAttributeName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "TimeToLiveDescription":{
+      "type":"structure",
+      "members":{
+        "TimeToLiveStatus":{"shape":"TimeToLiveStatus"},
+        "AttributeName":{"shape":"TimeToLiveAttributeName"}
+      }
+    },
+    "TimeToLiveEnabled":{"type":"boolean"},
+    "TimeToLiveSpecification":{
+      "type":"structure",
+      "required":[
+        "Enabled",
+        "AttributeName"
+      ],
+      "members":{
+        "Enabled":{"shape":"TimeToLiveEnabled"},
+        "AttributeName":{"shape":"TimeToLiveAttributeName"}
+      }
+    },
+    "TimeToLiveStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLING",
+        "DISABLING",
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{"shape":"ResourceArnString"},
+        "TagKeys":{"shape":"TagKeyList"}
+      }
     },
     "UpdateExpression":{"type":"string"},
     "UpdateGlobalSecondaryIndexAction":{
@@ -1305,6 +1371,23 @@
         "TableDescription":{"shape":"TableDescription"}
       }
     },
+    "UpdateTimeToLiveInput":{
+      "type":"structure",
+      "required":[
+        "TableName",
+        "TimeToLiveSpecification"
+      ],
+      "members":{
+        "TableName":{"shape":"TableName"},
+        "TimeToLiveSpecification":{"shape":"TimeToLiveSpecification"}
+      }
+    },
+    "UpdateTimeToLiveOutput":{
+      "type":"structure",
+      "members":{
+        "TimeToLiveSpecification":{"shape":"TimeToLiveSpecification"}
+      }
+    },
     "WriteRequest":{
       "type":"structure",
       "members":{
@@ -1315,8 +1398,8 @@
     "WriteRequests":{
       "type":"list",
       "member":{"shape":"WriteRequest"},
-      "min":1,
-      "max":25
+      "max":25,
+      "min":1
     }
   }
 }

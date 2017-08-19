@@ -17,10 +17,7 @@ type StateShowCommand struct {
 }
 
 func (c *StateShowCommand) Run(args []string) int {
-	args, err := c.Meta.process(args, true)
-	if err != nil {
-		return 1
-	}
+	args = c.Meta.process(args, true)
 
 	cmdFlags := c.Meta.flagSet("state show")
 	cmdFlags.StringVar(&c.Meta.statePath, "state", DefaultStateFilename, "path")
@@ -37,7 +34,7 @@ func (c *StateShowCommand) Run(args []string) int {
 	}
 
 	// Get the state
-	env := c.Workspace()
+	env := c.Env()
 	state, err := b.State(env)
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed to load state: %s", err))

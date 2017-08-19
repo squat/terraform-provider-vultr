@@ -29,10 +29,7 @@ func (c *FmtCommand) Run(args []string) int {
 		c.input = os.Stdin
 	}
 
-	args, err := c.Meta.process(args, false)
-	if err != nil {
-		return 1
-	}
+	args = c.Meta.process(args, false)
 
 	cmdFlags := flag.NewFlagSet("fmt", flag.ContinueOnError)
 	cmdFlags.BoolVar(&c.opts.List, "list", true, "list")
@@ -62,7 +59,7 @@ func (c *FmtCommand) Run(args []string) int {
 	}
 
 	output := &cli.UiWriter{Ui: c.Ui}
-	err = fmtcmd.Run(dirs, []string{fileExtension}, c.input, output, c.opts)
+	err := fmtcmd.Run(dirs, []string{fileExtension}, c.input, output, c.opts)
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Error running fmt: %s", err))
 		return 2

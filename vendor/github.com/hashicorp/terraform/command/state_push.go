@@ -17,10 +17,7 @@ type StatePushCommand struct {
 }
 
 func (c *StatePushCommand) Run(args []string) int {
-	args, err := c.Meta.process(args, true)
-	if err != nil {
-		return 1
-	}
+	args = c.Meta.process(args, true)
 
 	var flagForce bool
 	cmdFlags := c.Meta.flagSet("state push")
@@ -70,7 +67,7 @@ func (c *StatePushCommand) Run(args []string) int {
 	}
 
 	// Get the state
-	env := c.Workspace()
+	env := c.Env()
 	state, err := b.State(env)
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed to load destination state: %s", err))

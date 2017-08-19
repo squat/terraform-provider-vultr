@@ -91,10 +91,9 @@ func (b *Backend) State(name string) (state.State, error) {
 	// Build the state client
 	var stateMgr state.State = &remote.State{
 		Client: &RemoteClient{
-			Client:    client,
-			Path:      path,
-			GZip:      gzip,
-			lockState: b.lock,
+			Client: client,
+			Path:   path,
+			GZip:   gzip,
 		},
 	}
 
