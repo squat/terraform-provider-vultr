@@ -46,10 +46,10 @@ test: vet lint
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
 vendor:
-	@dep ensure
+	@glide install -v
 
 vendor-status:
-	@dep status
+	@glide list
 
 vet:
 	@echo "go vet ."
