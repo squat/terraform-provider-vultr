@@ -19,11 +19,12 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"vultr_application": dataSourceApplication(),
-			"vultr_os":          dataSourceOS(),
-			"vultr_plan":        dataSourcePlan(),
-			"vultr_region":      dataSourceRegion(),
-			"vultr_ssh_key":     dataSourceSSHKey(),
+			"vultr_application":    dataSourceApplication(),
+			"vultr_firewall_group": dataSourceFirewallGroup(),
+			"vultr_os":             dataSourceOS(),
+			"vultr_plan":           dataSourcePlan(),
+			"vultr_region":         dataSourceRegion(),
+			"vultr_ssh_key":        dataSourceSSHKey(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
