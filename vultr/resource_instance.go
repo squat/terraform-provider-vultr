@@ -173,12 +173,6 @@ func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error creating instance: %v", err)
 	}
 	d.SetId(instance.ID)
-	// Initialize the connection information.
-	d.SetConnInfo(map[string]string{
-		"type":     "ssh",
-		"host":     instance.MainIP,
-		"password": instance.DefaultPassword,
-	})
 
 	if _, err := waitForResourceState(d, meta, "instance", "status", resourceInstanceRead, "active", []string{"pending"}); err != nil {
 		return err
@@ -223,7 +217,14 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("tag", instance.Tag)
 	d.Set("vcpus", instance.VCpus)
 
-	log.Printf("[INFO] FIREWALL: %s", instance.FirewallGroupID)
+	// Initialize the connection information.
+	d.SetConnInfo(map[string]string{
+		"host":     instance.MainIP,
+		"password": instance.DefaultPassword,
+		"type":     "ssh",
+		"user":     "root",
+	})
+
 	return nil
 }
 
