@@ -1,0 +1,6 @@
+#!ipxe
+
+set base-url http://beta.release.core-os.net/amd64-usr/current
+kernel ${base-url}/coreos_production_pxe.vmlinuz coreos.config.url=http://169.254.169.254/user-data/user-data coreos.first_boot=1
+initrd ${base-url}/coreos_production_pxe_image.cpio.gz
+boot
