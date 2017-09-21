@@ -2,6 +2,7 @@ package vultr
 
 import (
 	"log"
+    "time"
 
 	"github.com/JamesClonk/vultr/lib"
 )
@@ -19,7 +20,7 @@ type Client struct {
 
 // Client configures and returns a fully initialized Vultr Client.
 func (c *Config) Client() (interface{}, error) {
-	client := Client{lib.NewClient(c.APIKey, &lib.Options{})}
+	client := Client{lib.NewClient(c.APIKey, &lib.Options{RateLimitation: 2 * time.Second})}
 	log.Printf("[INFO] Vultr Client configured for URL: %s", client.Endpoint)
 	return &client, nil
 }
