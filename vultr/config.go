@@ -2,7 +2,7 @@ package vultr
 
 import (
 	"log"
-    "time"
+	"time"
 
 	"github.com/JamesClonk/vultr/lib"
 )
