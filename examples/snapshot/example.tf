@@ -29,12 +29,12 @@ data "vultr_region" "silicon_valley" {
 data "vultr_plan" "starter" {
   filter {
     name   = "price_per_month"
-    values = ["10.00"]
+    values = ["5.00"]
   }
 
   filter {
     name   = "ram"
-    values = ["2048"]
+    values = ["1024"]
   }
 }
 
