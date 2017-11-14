@@ -1,8 +1,8 @@
-// Configure the Vultr provider. 
+// Configure the Vultr provider.
 // Alternatively, export the API key as an environment variable: `export VULTR_API_KEY=<your-vultr-api-key>`.
-#provider "vultr" {
-#api_key = "<your-vultr-api-key>"
-#}
+provider "vultr" {
+  api_key = "<your-vultr-api-key>"
+}
 
 // Find the ID of the New Jersey region.
 data "vultr_region" "new_jersey" {
@@ -70,6 +70,7 @@ resource "vultr_dns_record" "api" {
   data   = "${element(vultr_instance.masters.*.ipv4_address, count.index)}"
   ttl    = 300
 }
+
 // Output all of the virtual machine's IPv4 addresses to STDOUT when the infrastructure is ready.
 output ip_addresses {
   value = "${vultr_instance.masters.*.ipv4_address}"

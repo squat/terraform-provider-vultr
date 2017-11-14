@@ -61,8 +61,8 @@ func dataSourceFirewallGroupRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("Error getting firewall groups: %v", err)
 	}
 
-	filter := filterFromSet(filters.(*schema.Set))
 	if filtersOk {
+		filter := filterFromSet(filters.(*schema.Set))
 		var filteredFirewallGroups []lib.FirewallGroup
 		for _, firewallGroup := range firewallGroups {
 			m := structToMap(firewallGroup)

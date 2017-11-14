@@ -61,8 +61,8 @@ func dataSourceApplicationRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting applications: %v", err)
 	}
 
-	filter := filterFromSet(filters.(*schema.Set))
 	if filtersOk {
+		filter := filterFromSet(filters.(*schema.Set))
 		var filteredApplications []lib.Application
 		for _, application := range applications {
 			m := structToMap(application)

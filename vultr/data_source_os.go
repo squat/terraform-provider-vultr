@@ -67,8 +67,8 @@ func dataSourceOSRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting images: %v", err)
 	}
 
-	filter := filterFromSet(filters.(*schema.Set))
 	if filtersOk {
+		filter := filterFromSet(filters.(*schema.Set))
 		var filteredImages []lib.OS
 		for _, image := range images {
 			m := structToMap(image)
