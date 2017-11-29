@@ -12,6 +12,9 @@ func resourceDNSDomain() *schema.Resource {
 		Create: resourceDNSDomainCreate,
 		Read:   resourceDNSDomainRead,
 		Delete: resourceDNSDomainDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"domain": {
