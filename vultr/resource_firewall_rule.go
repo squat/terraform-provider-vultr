@@ -16,6 +16,9 @@ func resourceFirewallRule() *schema.Resource {
 		Create: resourceFirewallRuleCreate,
 		Read:   resourceFirewallRuleRead,
 		Delete: resourceFirewallRuleDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"action": {
@@ -136,14 +139,15 @@ func resourceFirewallRuleRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("action", firewallRule.Action)
 	d.Set("cidr_block", firewallRule.Network.String())
 	d.Set("direction", "in")
+	d.Set("firewall_group_id", firewallGroupID)
 	d.Set("protocol", firewallRule.Protocol)
 	ports := strings.Split(firewallRule.Port, ":")
-	d.Set("from_port", ports[0])
+	port, _ := strconv.Atoi(ports[0])
+	d.Set("from_port", port)
 	if len(ports) == 2 {
-		d.Set("to_port", ports[1])
-		return nil
+		port, _ = strconv.Atoi(ports[1])
 	}
-	d.Set("to_port", ports[0])
+	d.Set("to_port", port)
 
 	return nil
 }
