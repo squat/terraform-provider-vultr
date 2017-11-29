@@ -114,9 +114,9 @@ func resourceDNSRecordRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var record *lib.DNSRecord
-	for _, r := range records {
-		if r.RecordID == id {
-			record = &r
+	for i := range records {
+		if records[i].RecordID == id {
+			record = &records[i]
 			break
 		}
 	}
