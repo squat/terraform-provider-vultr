@@ -14,6 +14,9 @@ func resourceStartupScript() *schema.Resource {
 		Read:   resourceStartupScriptRead,
 		Update: resourceStartupScriptUpdate,
 		Delete: resourceStartupScriptDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"content": {
@@ -65,6 +68,12 @@ func resourceStartupScriptRead(d *schema.ResourceData, meta interface{}) error {
 	script, err := client.GetStartupScript(d.Id())
 	if err != nil {
 		return fmt.Errorf("Error getting startup script (%s): %v", d.Id(), err)
+	}
+
+	if script == (lib.StartupScript{}) {
+		log.Printf("[WARN] Removing startup script (%s) because it is gone", d.Id())
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("content", script.Content)
