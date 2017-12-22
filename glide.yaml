@@ -1,4 +1,14 @@
 package: github.com/squat/terraform-provider-vultr
+license: MPL-2.0
+ignore:
+- appengine
+- test
+- github.com/hashicorp/nomad/
+- github.com/hashicorp/terraform/backend
+excludeDirs:
+- examples
+- scripts
+- website
 import:
 - package: github.com/JamesClonk/vultr
   subpackages:
@@ -6,6 +16,7 @@ import:
   version: 1.15.0
 - package: github.com/fatih/structs
 - package: github.com/hashicorp/terraform
+  version: v0.10.0
   subpackages:
   - helper/mutexkv
   - helper/resource
