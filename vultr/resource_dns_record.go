@@ -164,8 +164,7 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 		Type:     d.Get("type").(string),
 	}
 
-	err := client.UpdateDNSRecord(domain, record)
-	if err != nil {
+	if err := client.UpdateDNSRecord(domain, record); err != nil {
 		return fmt.Errorf("Error updating DNS record (%s): %v", d.Id(), err)
 	}
 
