@@ -1,5 +1,5 @@
-hash: 783164ca20f740e33d7e2f14ae650357f4812e4580dba95677ae4af7f819d2fa
-updated: 2017-10-27T14:19:24.205166481+02:00
+hash: d901ca8b8e15b75d689d896110263e15cf7c27c9378ce33537b07b4ee7054879
+updated: 2018-01-03T19:48:20.673845872-05:00
 imports:
 - name: github.com/apparentlymart/go-cidr
   version: a3ebdb999b831ecb6ab8a226e31b07b2b9061c47
@@ -99,7 +99,7 @@ imports:
 - name: github.com/hashicorp/yamux
   version: d1caa6c97c9fc1cc9e83bbe34d0603f9ff0ce8bd
 - name: github.com/JamesClonk/vultr
-  version: e5dad9a80e61623e1da10706f486596f77469049
+  version: fa1c0367800db75e4d10d0ec90c49a8731670224
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
