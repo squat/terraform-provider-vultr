@@ -106,6 +106,12 @@ func resourceInstance() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"snapshot_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+
 			"startup_script_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -152,6 +158,7 @@ func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 		IPV6:              d.Get("ipv6").(bool),
 		PrivateNetworking: d.Get("private_networking").(bool),
 		Script:            d.Get("startup_script_id").(int),
+		Snapshot:          d.Get("snapshot_id").(string),
 		Tag:               d.Get("tag").(string),
 		UserData:          d.Get("user_data").(string),
 	}

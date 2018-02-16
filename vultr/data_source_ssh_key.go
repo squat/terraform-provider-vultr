@@ -51,8 +51,8 @@ func dataSourceSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting SSH keys: %v", err)
 	}
 
-	filter := filterFromSet(filters.(*schema.Set))
 	if filtersOk {
+		filter := filterFromSet(filters.(*schema.Set))
 		var filteredKeys []lib.SSHKey
 		for _, key := range keys {
 			m := structToMap(key)

@@ -15,6 +15,9 @@ func resourceSSHKey() *schema.Resource {
 		Read:   resourceSSHKeyRead,
 		Update: resourceSSHKeyUpdate,
 		Delete: resourceSSHKeyDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -56,17 +59,19 @@ func resourceSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error getting SSH keys: %v", err)
 	}
+
 	var key *lib.SSHKey
 	for i := range keys {
 		if keys[i].ID == d.Id() {
 			key = &keys[i]
 			break
 		}
-		if i == len(keys)-1 {
-			log.Printf("[WARN] Removing SSH key (%s) because it is gone", d.Id())
-			d.SetId("")
-			return nil
-		}
+	}
+
+	if key == nil {
+		log.Printf("[WARN] Removing SSH key (%s) because it is gone", d.Id())
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("name", key.Name)

@@ -77,8 +77,8 @@ func dataSourceRegionRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting regions: %v", err)
 	}
 
-	filter := filterFromSet(filters.(*schema.Set))
 	if filtersOk {
+		filter := filterFromSet(filters.(*schema.Set))
 		var filteredRegions []lib.Region
 		for _, region := range regions {
 			m := structToMap(region)

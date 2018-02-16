@@ -10,12 +10,17 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
+const dnsRecordIDFormatErrTemplate = "DNS record ID must conform to <domain>/<record-ID>, where <record-ID> is an integer; got %q"
+
 func resourceDNSRecord() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceDNSRecordCreate,
 		Read:   resourceDNSRecordRead,
 		Update: resourceDNSRecordUpdate,
 		Delete: resourceDNSRecordDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"data": {
@@ -100,8 +105,14 @@ func resourceDNSRecordRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
 	idParts := strings.Split(d.Id(), "/")
+	if len(idParts) != 2 {
+		return fmt.Errorf(dnsRecordIDFormatErrTemplate, d.Id())
+	}
 	domain := idParts[0]
-	id, _ := strconv.Atoi(idParts[1])
+	id, err := strconv.Atoi(idParts[1])
+	if err != nil {
+		return fmt.Errorf(dnsRecordIDFormatErrTemplate, d.Id())
+	}
 
 	records, err := client.GetDNSRecords(domain)
 	if err != nil {
@@ -114,9 +125,9 @@ func resourceDNSRecordRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var record *lib.DNSRecord
-	for _, r := range records {
-		if r.RecordID == id {
-			record = &r
+	for i := range records {
+		if records[i].RecordID == id {
+			record = &records[i]
 			break
 		}
 	}
@@ -128,6 +139,7 @@ func resourceDNSRecordRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("data", record.Data)
+	d.Set("domain", domain)
 	d.Set("name", record.Name)
 	d.Set("priority", record.Priority)
 	d.Set("ttl", record.TTL)
@@ -152,7 +164,6 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 		Type:     d.Get("type").(string),
 	}
 
-	client.UpdateDNSRecord(domain, record)
 	if err := client.UpdateDNSRecord(domain, record); err != nil {
 		return fmt.Errorf("Error updating DNS record (%s): %v", d.Id(), err)
 	}

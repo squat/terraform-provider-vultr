@@ -80,8 +80,8 @@ func dataSourcePlanRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting plans: %v", err)
 	}
 
-	filter := filterFromSet(filters.(*schema.Set))
 	if filtersOk {
+		filter := filterFromSet(filters.(*schema.Set))
 		var filteredPlans []lib.Plan
 		for _, plan := range plans {
 			m := structToMap(plan)

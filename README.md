@@ -18,10 +18,10 @@ Download `terraform-provider-vultr` and install the plugin binary on the filesys
 go get -u github.com/squat/terraform-provider-vultr
 ```
 
-Register the plugin in `~/.terraformrc`:
+Register the plugin binary in `~/.terraformrc`:
 ```tf
 providers {
-  vultr = "/path/to/terraform-provider-vultr"
+  vultr = "$GOPATH/bin/terraform-provider-vultr"
 }
 ```
 

@@ -13,6 +13,9 @@ func resourceFirewallGroup() *schema.Resource {
 		Read:   resourceFirewallGroupRead,
 		Update: resourceFirewallGroupUpdate,
 		Delete: resourceFirewallGroupDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"description": {

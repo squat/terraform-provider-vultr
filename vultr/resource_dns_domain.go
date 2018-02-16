@@ -3,7 +3,9 @@ package vultr
 import (
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/JamesClonk/vultr/lib"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -12,6 +14,9 @@ func resourceDNSDomain() *schema.Resource {
 		Create: resourceDNSDomainCreate,
 		Read:   resourceDNSDomainRead,
 		Delete: resourceDNSDomainDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"domain": {
@@ -55,14 +60,47 @@ func resourceDNSDomainRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting DNS domains: %v", err)
 	}
 
+	var dnsDomain *lib.DNSDomain
 	for i := range dnsDomains {
 		if dnsDomains[i].Domain == d.Id() {
-			return nil
+			dnsDomain = &dnsDomains[i]
+			break
 		}
 	}
 
-	log.Printf("[WARN] Removing DNS domain (%s) because it is gone", d.Id())
-	d.SetId("")
+	if dnsDomain == nil {
+		log.Printf("[WARN] Removing DNS domain (%s) because it is gone", d.Id())
+		d.SetId("")
+		return nil
+	}
+
+	// Find the default record for the domain.
+	records, err := client.GetDNSRecords(dnsDomain.Domain)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "Invalid domain.") {
+			log.Printf("[WARN] Removing DNS domain (%s) because it has no default record", d.Id())
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error getting DNS records for DNS domain (%s): %v", d.Id(), err)
+	}
+
+	var record *lib.DNSRecord
+	for i := range records {
+		if records[i].Type == "A" && records[i].Name == "" {
+			record = &records[i]
+			break
+		}
+	}
+
+	if record == nil {
+		log.Printf("[WARN] Removing DNS domain (%s) because it has no default record", d.Id())
+		d.SetId("")
+		return nil
+	}
+
+	d.Set("domain", dnsDomain.Domain)
+	d.Set("ip", record.Data)
 
 	return nil
 }

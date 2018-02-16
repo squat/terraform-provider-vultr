@@ -4,20 +4,17 @@ provider "vultr" {
   api_key = "<your-vultr-api-key>"
 }
 
-// Find the OS ID for applications.
-data "vultr_os" "application" {
+// Find the OS ID for snapshots.
+data "vultr_os" "snapshot" {
   filter {
     name   = "family"
-    values = ["application"]
+    values = ["snapshot"]
   }
 }
 
-// Find the application ID for OpenVPN.
-data "vultr_application" "openvpn" {
-  filter {
-    name   = "short_name"
-    values = ["openvpn"]
-  }
+// Find the snapshot ID for a Kubernetes master.
+data "vultr_snapshot" "master" {
+  description_regex = "master"
 }
 
 // Find the ID of the Silicon Valley region.
@@ -42,11 +39,11 @@ data "vultr_plan" "starter" {
 }
 
 // Create a Vultr virtual machine.
-resource "vultr_instance" "openvpn" {
-  name           = "openvpn"
-  hostname       = "openvpn"
-  region_id      = "${data.vultr_region.silicon_valley.id}"
-  plan_id        = "${data.vultr_plan.starter.id}"
-  os_id          = "${data.vultr_os.application.id}"
-  application_id = "${data.vultr_application.openvpn.id}"
+resource "vultr_instance" "master" {
+  name        = "master"
+  hostname    = "master"
+  region_id   = "${data.vultr_region.silicon_valley.id}"
+  plan_id     = "${data.vultr_plan.starter.id}"
+  os_id       = "${data.vultr_os.snapshot.id}"
+  snapshot_id = "${data.vultr_snapshot.master.id}"
 }
