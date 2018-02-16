@@ -67,6 +67,12 @@ func resourceInstance() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"ipv6_address": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
 			"name": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -223,6 +229,12 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("status", instance.Status)
 	d.Set("tag", instance.Tag)
 	d.Set("vcpus", instance.VCpus)
+
+	var ipv6s []string
+	for _, net := range instance.V6Networks {
+		ipv6s = append(ipv6s, net.MainIP)
+	}
+	d.Set("ipv6_address", ipv6s)
 
 	// Initialize the connection information.
 	d.SetConnInfo(map[string]string{
