@@ -1,3 +1,7 @@
+provider "vultr" {
+  api_key = "${chomp(file("~/.creds/vultr_api_token"))}"
+}
+
 // Create swarm_manager
 
 resource "vultr_instance" "swarm_manager" {
@@ -6,7 +10,7 @@ resource "vultr_instance" "swarm_manager" {
   region_id         = "${data.vultr_region.my_region.id}"
   plan_id           = "${data.vultr_plan.manager_plan.id}"
   os_id             = "${data.vultr_os.my_os.id}"
-  ssh_key_ids       = ["${data.vultr_ssh_key.nilesh.id}"]
+  ssh_key_ids       = ["${vultr_ssh_key.nilesh.id}"]
   hostname          = "${terraform.workspace}-manager-${count.index}"
   tag               = "manager"
   private_networking= true

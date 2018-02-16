@@ -1,11 +1,8 @@
 output "workspace" {
   value = "${terraform.workspace}"
 }
-output "swarm_manager_token" {
-  value = "${data.external.swarm_tokens.result.manager}"
-}
-output "swarm_worker_token" {
-  value = "${data.external.swarm_tokens.result.worker}"
+output "swarm_tokens" {
+  value = "${data.external.swarm_tokens.result}"
 }
 output "manager_count" {
   value = ["${vultr_instance.swarm_manager.count}"]

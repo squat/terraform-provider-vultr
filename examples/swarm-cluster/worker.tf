@@ -6,7 +6,7 @@ resource "vultr_instance" "swarm_worker" {
   region_id         = "${data.vultr_region.my_region.id}"
   plan_id           = "${data.vultr_plan.worker_plan.id}"
   os_id             = "${data.vultr_os.my_os.id}"
-  ssh_key_ids       = ["${data.vultr_ssh_key.nilesh.id}"]
+  ssh_key_ids       = ["${vultr_ssh_key.nilesh.id}"]
   hostname          = "${terraform.workspace}-worker-${count.index}"
   tag               = "worker"
   private_networking= true

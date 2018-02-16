@@ -4,6 +4,10 @@ Set an environment variable containing the Vultr API key:
 
     export VULTR_API_KEY=<your-vultr-api-key>
 
+    or
+
+Save vultr api key in a file `~/.creds/vultr_api_token`
+
 Note: as an alternative, the API key can be specified in configuration as shown below.
 
     // Configure the Vultr provider.
@@ -19,3 +23,9 @@ Note: as an alternative, the API key can be specified in configuration as shown 
 or
 
     brew install jq
+
+
+
+the same on digital ocean
+
+https://knpw.rs/blog/docker-swarm-terraform
