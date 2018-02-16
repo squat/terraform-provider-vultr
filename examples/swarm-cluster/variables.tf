@@ -28,13 +28,6 @@ variable "worker_instance_count" {
   default = 1
 }
 
-// Find the ID of an existing SSH key.
-data "vultr_ssh_key" "nilesh" {
-  filter {
-    name   = "name"
-    values = ["nilesh"]
-  }
-}
 
 //apt-cache madison docker-ce
 variable "docker_version" {
