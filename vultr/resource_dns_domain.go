@@ -13,6 +13,7 @@ func resourceDNSDomain() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceDNSDomainCreate,
 		Read:   resourceDNSDomainRead,
+		Update: resourceDNSDomainUpdate,
 		Delete: resourceDNSDomainDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -28,7 +29,6 @@ func resourceDNSDomain() *schema.Resource {
 			"ip": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validateIPAddress,
 			},
 		},
@@ -103,6 +103,36 @@ func resourceDNSDomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ip", record.Data)
 
 	return nil
+}
+
+func resourceDNSDomainUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*Client)
+
+	// Find the default record for the domain.
+	records, err := client.GetDNSRecords(d.Id())
+	if err != nil {
+		return fmt.Errorf("Error fetching default DNS record for DNS domain (%s): %v", d.Id(), err)
+	}
+
+	var record *lib.DNSRecord
+	for i := range records {
+		if records[i].Type == "A" && records[i].Name == "" {
+			record = &records[i]
+			break
+		}
+	}
+
+	// Failed to find default record so read the domain again.
+	if record == nil {
+		return resourceDNSDomainRead(d, meta)
+	}
+
+	record.Data = d.Get("ip").(string)
+	if err := client.UpdateDNSRecord(d.Id(), *record); err != nil {
+		return fmt.Errorf("Error updating default DNS record for DNS domain (%s): %v", d.Id(), err)
+	}
+
+	return resourceDNSDomainRead(d, meta)
 }
 
 func resourceDNSDomainDelete(d *schema.ResourceData, meta interface{}) error {
