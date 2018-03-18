@@ -37,6 +37,7 @@ func Provider() terraform.ResourceProvider {
 			"vultr_ipv4":           resourceIPV4(),
 			"vultr_startup_script": resourceStartupScript(),
 			"vultr_ssh_key":        resourceSSHKey(),
+			"vultr_block_storage":  resourceBlockStorage(),
 		},
 
 		ConfigureFunc: providerConfigure,
