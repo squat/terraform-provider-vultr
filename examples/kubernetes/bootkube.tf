@@ -7,5 +7,4 @@ module "bootkube" {
   asset_dir                     = "${var.asset_dir}"
   pod_cidr                      = "${var.pod_cidr}"
   service_cidr                  = "${var.service_cidr}"
-  experimental_self_hosted_etcd = true
 }
