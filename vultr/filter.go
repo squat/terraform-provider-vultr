@@ -1,6 +1,8 @@
 package vultr
 
 import (
+	"strconv"
+
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -11,8 +13,13 @@ func structToMap(s interface{}) map[string]string {
 	m := st.Map()
 	m2 := make(map[string]string)
 	for k, v := range m {
-		if val, ok := v.(string); ok {
-			m2[k] = val
+		switch v.(type) {
+		case string:
+			m2[k] = v.(string)
+		case bool:
+			m2[k] = strconv.FormatBool(v.(bool))
+		case int:
+			m2[k] = strconv.FormatInt(int64(v.(int)), 10)
 		}
 	}
 	return m2

@@ -13,6 +13,9 @@ func resourceBlockStorage() *schema.Resource {
 		Read:   resourceBlockStorageRead,
 		Update: resourceBlockStorageUpdate,
 		Delete: resourceBlockStorageDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
