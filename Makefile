@@ -1,14 +1,62 @@
-.PHONY: build fmt fmt-go fmt-terraform lint lint-go lint-terraform test vendor vendor-status vet 
+.PHONY: all-release fmt fmt-go fmt-terraform install lint lint-go lint-terraform release test vendor vendor-status vet 
 
-TEST?=$$(go list ./... | grep -v 'vendor/')
-GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
-TERRAFORMFMT_FILES?=examples
-TESTARGS?=
+ARCH ?= amd64
+PLATFORM ?= linux
+ALL_PLATFORMS := darwin linux
+BIN := terraform-provider-vultr
+PKG := github.com/squat/$(BIN)
+BUILD_IMAGE ?= golang:1.10.0-alpine
+TEST ?= $$(go list ./... | grep -v 'vendor/')
+GOFMT_FILES ?= $$(find . -name '*.go' | grep -v vendor)
+SRC := $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+TERRAFORMFMT_FILES ?= examples
+TESTARGS ?=
+TAG := $(shell git describe --abbrev=0 --tags HEAD 2>/dev/null)
+COMMIT := $(shell git rev-parse HEAD)
+VERSION := $(COMMIT)
+ifneq ($(TAG),)
+    ifeq ($(COMMIT), $(shell git rev-list -n1 $(TAG)))
+        VERSION := $(TAG)
+    endif
+endif
+DIRTY := $(shell test -z "$$(git diff --shortstat 2>/dev/null)" || echo -dirty)
+VERSION := $(VERSION)$(DIRTY)
 
-default: build
+default: install
 
-build:
+install:
 	go install
+
+all-release: $(addprefix release-, $(ALL_PLATFORMS))
+
+release-%:
+	@$(MAKE) --no-print-directory ARCH=$(ARCH) PLATFORM=$* release
+
+release: bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz.asc
+
+bin/$(PLATFORM)/$(ARCH):
+	@mkdir -p bin/$(PLATFORM)/$(ARCH)
+
+bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz.asc: bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz
+	@cd bin && gpg --armor --detach-sign $(<F)
+
+bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz: bin/$(PLATFORM)/$(ARCH)/$(BIN)
+	@tar -czf $@ -C $(<D) $(<F)
+
+bin/$(PLATFORM)/$(ARCH)/$(BIN): $(SRC) glide.yaml bin/$(PLATFORM)/$(ARCH)
+	@echo "building: $@"
+	@docker run --rm \
+	    -u $$(id -u):$$(id -g) \
+	    -v $$(pwd):/go/src/$(PKG) \
+	    -v $$(pwd)/bin/$(PLATFORM)/$(ARCH):/go/bin \
+	    -w /go/src/$(PKG) \
+	    $(BUILD_IMAGE) \
+	    /bin/sh -c " \
+	        GOARCH=$(ARCH) \
+	        GOOS=$(PLATFORM) \
+		CGO_ENABLED=0 \
+		go build -o /go/bin/$(BIN) \
+	    "
 
 fmt: fmt-go fmt-terraform
 
