@@ -1,4 +1,4 @@
-.PHONY: all-release fmt fmt-go fmt-terraform install lint lint-go lint-terraform release test vendor vendor-status vet 
+.PHONY: all-release build fmt fmt-go fmt-terraform lint lint-go lint-terraform release test vendor vendor-status vet 
 
 ARCH ?= amd64
 PLATFORM ?= linux
@@ -22,9 +22,9 @@ endif
 DIRTY := $(shell test -z "$$(git diff --shortstat 2>/dev/null)" || echo -dirty)
 VERSION := $(VERSION)$(DIRTY)
 
-default: install
+default: build
 
-install:
+build:
 	go install
 
 all-release: $(addprefix release-, $(ALL_PLATFORMS))
