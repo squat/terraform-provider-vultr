@@ -3,6 +3,7 @@ package vultr
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -35,7 +36,16 @@ func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}, prop str
 		}
 
 		if state, ok := d.GetOk(prop); ok {
-			return struct{}{}, state.(string), nil
+			switch t := state.(type) {
+			case bool:
+				return struct{}{}, strconv.FormatBool(state.(bool)), nil
+			case int:
+				return struct{}{}, strconv.FormatInt(int64(state.(int)), 10), nil
+			case string:
+				return struct{}{}, state.(string), nil
+			default:
+				return struct{}{}, "", fmt.Errorf("do not know how to interpret %v of type %T", state, t)
+			}
 		}
 		return nil, "", nil
 	}

@@ -3,6 +3,7 @@ package vultr
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/JamesClonk/vultr/lib"
@@ -20,7 +21,6 @@ func resourceInstance() *schema.Resource {
 			"application_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
 			},
 
 			"cost_per_month": {
@@ -81,7 +81,6 @@ func resourceInstance() *schema.Resource {
 			"os_id": {
 				Type:     schema.TypeInt,
 				Required: true,
-				ForceNew: true,
 			},
 
 			"plan_id": {
@@ -252,6 +251,18 @@ func resourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(true)
 
+	if d.HasChange("application_id") {
+		log.Printf("[INFO] Updating instance (%s) application", d.Id())
+		old, new := d.GetChange("application_id")
+		if err := client.ChangeApplicationofServer(d.Id(), new.(string)); err != nil {
+			return fmt.Errorf("Error changing application of instance (%s) to %q: %v", d.Id(), new.(string), err)
+		}
+		if _, err := waitForResourceState(d, meta, "instance", "application_id", resourceInstanceRead, new.(string), []string{"", old.(string)}); err != nil {
+			return err
+		}
+		d.SetPartial("application_id")
+	}
+
 	if d.HasChange("firewall_group_id") {
 		log.Printf("[INFO] Updating instance (%s) firewall group", d.Id())
 		old, new := d.GetChange("firewall_group_id")
@@ -273,6 +284,18 @@ func resourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 		d.SetPartial("name")
+	}
+
+	if d.HasChange("os_id") {
+		log.Printf("[INFO] Updating instance (%s) OS", d.Id())
+		old, new := d.GetChange("os_id")
+		if err := client.ChangeOSofServer(d.Id(), new.(int)); err != nil {
+			return fmt.Errorf("Error changing OS of instance (%s) to %d: %v", d.Id(), new.(int), err)
+		}
+		if _, err := waitForResourceState(d, meta, "instance", "os_id", resourceInstanceRead, strconv.FormatInt(int64(new.(int)), 10), []string{"", strconv.FormatInt(int64(old.(int)), 10)}); err != nil {
+			return err
+		}
+		d.SetPartial("os_id")
 	}
 
 	if d.HasChange("tag") {
