@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/JamesClonk/vultr/lib"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -15,6 +16,9 @@ func resourceIPV4() *schema.Resource {
 		Read:   resourceIPV4Read,
 		Update: resourceIPV4Update,
 		Delete: resourceIPV4Delete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"gateway": {
@@ -41,6 +45,7 @@ func resourceIPV4() *schema.Resource {
 			"reboot": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  true,
 			},
 
 			"reverse_dns": {
@@ -91,7 +96,7 @@ func resourceIPV4Create(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("Error finding created IPv4 address")
 	}
 
-	d.SetId(ip.IP)
+	d.SetId(fmt.Sprintf("%s/%s", instance, ip.IP))
 
 	return resourceIPV4Read(d, meta)
 }
@@ -99,13 +104,18 @@ func resourceIPV4Create(d *schema.ResourceData, meta interface{}) error {
 func resourceIPV4Read(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	ips, err := client.ListIPv4(d.Get("instance_id").(string))
+	instance, id, err := idFromData(d)
+	if err != nil {
+		return err
+	}
+
+	ips, err := client.ListIPv4(instance)
 	if err != nil {
 		return fmt.Errorf("Error getting IPv4 addresses: %v", err)
 	}
 	var ip *lib.IPv4
 	for i := range ips {
-		if ips[i].IP == d.Id() {
+		if ips[i].IP == id {
 			ip = &ips[i]
 			break
 		}
@@ -132,11 +142,26 @@ func resourceIPV4Update(d *schema.ResourceData, meta interface{}) error {
 func resourceIPV4Delete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
+	instance, id, err := idFromData(d)
+	if err != nil {
+		return err
+	}
+
 	log.Printf("[INFO] Destroying IPv4 address (%s)", d.Id())
 
-	if err := client.DeleteIPv4(d.Get("instance_id").(string), d.Id()); err != nil {
+	if err := client.DeleteIPv4(instance, id); err != nil {
 		return fmt.Errorf("Error destroying IPv4 address (%s): %v", d.Id(), err)
 	}
 
 	return nil
+}
+
+// idFromData returns the IPv4 id components from the ResourceData ID,
+// which are, in order: the IPv4's associated instance, the actual IP, and any error.
+func idFromData(d *schema.ResourceData) (string, string, error) {
+	parts := strings.Split(d.Id(), "/")
+	if len(parts) != 2 {
+		return "", "", errors.New("Error parsing IPv4 ID: ID should be of form <instance-id>/<ip-address>")
+	}
+	return parts[0], parts[1], nil
 }

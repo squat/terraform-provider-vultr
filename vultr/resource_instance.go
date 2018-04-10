@@ -16,6 +16,9 @@ func resourceInstance() *schema.Resource {
 		Read:   resourceInstanceRead,
 		Update: resourceInstanceUpdate,
 		Delete: resourceInstanceDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"application_id": {
@@ -209,18 +212,23 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting instance (%s): %v", d.Id(), err)
 	}
 
+	d.Set("application_id", instance.AppID)
 	d.Set("cost_per_month", instance.Cost)
 	d.Set("default_password", instance.DefaultPassword)
 	d.Set("disk", instance.Disk)
 	if instance.FirewallGroupID == "" {
-		d.Set("firewall_group_id", 0)
+		d.Set("firewall_group_id", "0")
 	} else {
 		d.Set("firewall_group_id", instance.FirewallGroupID)
 	}
 	d.Set("ipv4_address", instance.MainIP)
 	d.Set("ipv4_private_address", instance.InternalIP)
 	d.Set("name", instance.Name)
-	d.Set("os_id", instance.OSID)
+	osID, err := strconv.Atoi(instance.OSID)
+	if err != nil {
+		return fmt.Errorf("OS ID must be an integer: %v", err)
+	}
+	d.Set("os_id", osID)
 	d.Set("plan_id", instance.PlanID)
 	d.Set("power_status", instance.PowerStatus)
 	d.Set("ram", instance.RAM)
