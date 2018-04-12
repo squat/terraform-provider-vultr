@@ -1,6 +1,6 @@
 # Vultr Terraform Provider
 
-This is a Terraform provider for the Vultr cloud. Find out more about [Vultr](https://www.vultr.com/about/).
+This is a Terraform provider for Vultr. Find out more about [Vultr](https://www.vultr.com/about/).
 
 [![Build Status](https://travis-ci.org/squat/terraform-provider-vultr.svg?branch=master)](https://travis-ci.org/squat/terraform-provider-vultr)
 [![Go Report Card](https://goreportcard.com/badge/github.com/squat/terraform-provider-vultr)](https://goreportcard.com/report/github.com/squat/terraform-provider-vultr)
@@ -13,16 +13,17 @@ This is a Terraform provider for the Vultr cloud. Find out more about [Vultr](ht
 
 ## Usage
 
-Download `terraform-provider-vultr` and install the plugin binary on the filesystem:
+Download `terraform-provider-vultr` from the [releases page](https://github.com/squat/terraform-provider-vultr/releases) and follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing it into your plugins directory,  run `terraform init` to initialize it.
+
+*Note*: in order to build and install the provider from the latest commit on master, run:
 ```sh
 go get -u github.com/squat/terraform-provider-vultr
 ```
 
-Register the plugin binary in `~/.terraformrc`:
-```tf
-providers {
-  vultr = "$GOPATH/bin/terraform-provider-vultr"
-}
+and then register the plugin by symlinking the binary to the [third-party plugins directory](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins):
+```sh
+mkdir -p ~/.terraform.d/plugins
+ln -s "$GOPATH/bin/terraform-provider-vultr" ~/.terraform.d/plugins/terraform-provider-vultr
 ```
 
 Set an environment variable containing the Vultr API key:

@@ -40,10 +40,10 @@ bin/$(PLATFORM)/$(ARCH):
 bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz.asc: bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz
 	@cd bin && gpg --armor --detach-sign $(<F)
 
-bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz: bin/$(PLATFORM)/$(ARCH)/$(BIN)
+bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz: bin/$(PLATFORM)/$(ARCH)/$(BIN)_$(VERSION)
 	@tar -czf $@ -C $(<D) $(<F)
 
-bin/$(PLATFORM)/$(ARCH)/$(BIN): $(SRC) glide.yaml bin/$(PLATFORM)/$(ARCH)
+bin/$(PLATFORM)/$(ARCH)/$(BIN)_$(VERSION): $(SRC) glide.yaml bin/$(PLATFORM)/$(ARCH)
 	@echo "building: $@"
 	@docker run --rm \
 	    -u $$(id -u):$$(id -g) \
@@ -55,7 +55,7 @@ bin/$(PLATFORM)/$(ARCH)/$(BIN): $(SRC) glide.yaml bin/$(PLATFORM)/$(ARCH)
 	        GOARCH=$(ARCH) \
 	        GOOS=$(PLATFORM) \
 		CGO_ENABLED=0 \
-		go build -o /go/bin/$(BIN) \
+		go build -o /go/bin/$(BIN)_$(VERSION) \
 	    "
 
 fmt: fmt-go fmt-terraform
