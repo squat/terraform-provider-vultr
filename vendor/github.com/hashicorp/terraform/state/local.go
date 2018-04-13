@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	multierror "github.com/hashicorp/go-multierror"
@@ -16,6 +17,8 @@ import (
 
 // LocalState manages a state storage that is local to the filesystem.
 type LocalState struct {
+	mu sync.Mutex
+
 	// Path is the path to read the state from. PathOut is the path to
 	// write the state to. If PathOut is not specified, Path will be used.
 	// If PathOut already exists, it will be overwritten.
@@ -42,8 +45,11 @@ type LocalState struct {
 
 // SetState will force a specific state in-memory for this local state.
 func (s *LocalState) SetState(state *terraform.State) {
-	s.state = state
-	s.readState = state
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.state = state.DeepCopy()
+	s.readState = state.DeepCopy()
 }
 
 // StateReader impl.
@@ -58,6 +64,9 @@ func (s *LocalState) State() *terraform.State {
 //
 // StateWriter impl.
 func (s *LocalState) WriteState(state *terraform.State) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.stateFileOut == nil {
 		if err := s.createStateFiles(); err != nil {
 			return nil
@@ -65,9 +74,16 @@ func (s *LocalState) WriteState(state *terraform.State) error {
 	}
 	defer s.stateFileOut.Sync()
 
-	s.state = state
+	s.state = state.DeepCopy() // don't want mutations before we actually get this written to disk
 
-	if _, err := s.stateFileOut.Seek(0, os.SEEK_SET); err != nil {
+	if s.readState != nil && s.state != nil {
+		// We don't trust callers to properly manage serials. Instead, we assume
+		// that a WriteState is always for the next version after what was
+		// most recently read.
+		s.state.Serial = s.readState.Serial
+	}
+
+	if _, err := s.stateFileOut.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
 	if err := s.stateFileOut.Truncate(0); err != nil {
@@ -79,8 +95,9 @@ func (s *LocalState) WriteState(state *terraform.State) error {
 		return nil
 	}
 
-	s.state.IncrementSerialMaybe(s.readState)
-	s.readState = s.state
+	if !s.state.MarshalEqual(s.readState) {
+		s.state.Serial++
+	}
 
 	if err := terraform.WriteState(s.state, s.stateFileOut); err != nil {
 		return err
@@ -99,8 +116,23 @@ func (s *LocalState) PersistState() error {
 
 // StateRefresher impl.
 func (s *LocalState) RefreshState() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.PathOut == "" {
+		s.PathOut = s.Path
+	}
+
 	var reader io.Reader
-	if !s.written {
+
+	// The s.Path file is only OK to read if we have not written any state out
+	// (in which case the same state needs to be read in), and no state output file
+	// has been opened (possibly via a lock) or the input path is different
+	// than the output path.
+	// This is important for Windows, as if the input file is the same as the
+	// output file, and the output file has been locked already, we can't open
+	// the file again.
+	if !s.written && (s.stateFileOut == nil || s.Path != s.PathOut) {
 		// we haven't written a state file yet, so load from Path
 		f, err := os.Open(s.Path)
 		if err != nil {
@@ -124,7 +156,7 @@ func (s *LocalState) RefreshState() error {
 		}
 
 		// we have a state file, make sure we're at the start
-		s.stateFileOut.Seek(0, os.SEEK_SET)
+		s.stateFileOut.Seek(0, io.SeekStart)
 		reader = s.stateFileOut
 	}
 
@@ -135,12 +167,15 @@ func (s *LocalState) RefreshState() error {
 	}
 
 	s.state = state
-	s.readState = state
+	s.readState = s.state.DeepCopy()
 	return nil
 }
 
 // Lock implements a local filesystem state.Locker.
 func (s *LocalState) Lock(info *LockInfo) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.stateFileOut == nil {
 		if err := s.createStateFiles(); err != nil {
 			return "", err
@@ -170,6 +205,9 @@ func (s *LocalState) Lock(info *LockInfo) (string, error) {
 }
 
 func (s *LocalState) Unlock(id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.lockID == "" {
 		return fmt.Errorf("LocalState not locked")
 	}

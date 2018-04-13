@@ -73,6 +73,7 @@ func TestDecode_interface(t *testing.T) {
 			false,
 			map[string]interface{}{
 				"a": 1.02,
+				"b": 2,
 			},
 		},
 		{
@@ -805,6 +806,44 @@ func TestDecode_intString(t *testing.T) {
 
 	if value.Count != 3 {
 		t.Fatalf("bad: %#v", value.Count)
+	}
+}
+
+func TestDecode_float32(t *testing.T) {
+	var value struct {
+		A float32 `hcl:"a"`
+		B float32 `hcl:"b"`
+	}
+
+	err := Decode(&value, testReadFile(t, "float.hcl"))
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	if got, want := value.A, float32(1.02); got != want {
+		t.Fatalf("wrong result %#v; want %#v", got, want)
+	}
+	if got, want := value.B, float32(2); got != want {
+		t.Fatalf("wrong result %#v; want %#v", got, want)
+	}
+}
+
+func TestDecode_float64(t *testing.T) {
+	var value struct {
+		A float64 `hcl:"a"`
+		B float64 `hcl:"b"`
+	}
+
+	err := Decode(&value, testReadFile(t, "float.hcl"))
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	if got, want := value.A, float64(1.02); got != want {
+		t.Fatalf("wrong result %#v; want %#v", got, want)
+	}
+	if got, want := value.B, float64(2); got != want {
+		t.Fatalf("wrong result %#v; want %#v", got, want)
 	}
 }
 

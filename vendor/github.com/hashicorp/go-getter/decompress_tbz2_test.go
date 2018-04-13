@@ -6,6 +6,8 @@ import (
 )
 
 func TestTarBzip2Decompressor(t *testing.T) {
+	orderingPaths := []string{"workers/", "workers/mq/", "workers/mq/__init__.py"}
+
 	cases := []TestDecompressCase{
 		{
 			"empty.tar.bz2",
@@ -13,6 +15,7 @@ func TestTarBzip2Decompressor(t *testing.T) {
 			true,
 			nil,
 			"",
+			nil,
 		},
 
 		{
@@ -21,6 +24,7 @@ func TestTarBzip2Decompressor(t *testing.T) {
 			false,
 			nil,
 			"d3b07384d113edec49eaa6238ad5ff00",
+			nil,
 		},
 
 		{
@@ -29,6 +33,7 @@ func TestTarBzip2Decompressor(t *testing.T) {
 			false,
 			[]string{"file"},
 			"",
+			nil,
 		},
 
 		{
@@ -37,6 +42,7 @@ func TestTarBzip2Decompressor(t *testing.T) {
 			false,
 			[]string{"file1", "file2"},
 			"",
+			nil,
 		},
 
 		{
@@ -45,6 +51,17 @@ func TestTarBzip2Decompressor(t *testing.T) {
 			true,
 			nil,
 			"",
+			nil,
+		},
+
+		// Tests when the file is listed before the parent folder
+		{
+			"ordering.tar.bz2",
+			true,
+			false,
+			orderingPaths,
+			"",
+			nil,
 		},
 	}
 

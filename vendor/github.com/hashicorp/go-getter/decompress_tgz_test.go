@@ -2,16 +2,13 @@ package getter
 
 import (
 	"path/filepath"
-	"runtime"
 	"testing"
 )
 
 func TestTarGzipDecompressor(t *testing.T) {
 
 	multiplePaths := []string{"dir/", "dir/test2", "test1"}
-	if runtime.GOOS == "windows" {
-		multiplePaths = []string{"dir/", "dir\\test2", "test1"}
-	}
+	orderingPaths := []string{"workers/", "workers/mq/", "workers/mq/__init__.py"}
 
 	cases := []TestDecompressCase{
 		{
@@ -20,6 +17,7 @@ func TestTarGzipDecompressor(t *testing.T) {
 			true,
 			nil,
 			"",
+			nil,
 		},
 
 		{
@@ -28,6 +26,7 @@ func TestTarGzipDecompressor(t *testing.T) {
 			false,
 			nil,
 			"d3b07384d113edec49eaa6238ad5ff00",
+			nil,
 		},
 
 		{
@@ -36,6 +35,7 @@ func TestTarGzipDecompressor(t *testing.T) {
 			false,
 			[]string{"file"},
 			"",
+			nil,
 		},
 
 		{
@@ -44,6 +44,7 @@ func TestTarGzipDecompressor(t *testing.T) {
 			false,
 			[]string{"file1", "file2"},
 			"",
+			nil,
 		},
 
 		{
@@ -52,6 +53,7 @@ func TestTarGzipDecompressor(t *testing.T) {
 			true,
 			nil,
 			"",
+			nil,
 		},
 
 		{
@@ -60,6 +62,28 @@ func TestTarGzipDecompressor(t *testing.T) {
 			false,
 			multiplePaths,
 			"",
+			nil,
+		},
+
+		// Tests when the file is listed before the parent folder
+		{
+			"ordering.tar.gz",
+			true,
+			false,
+			orderingPaths,
+			"",
+			nil,
+		},
+
+		// Tests that a tar.gz can't contain references with "..".
+		// GNU `tar` also disallows this.
+		{
+			"outside_parent.tar.gz",
+			true,
+			true,
+			nil,
+			"",
+			nil,
 		},
 	}
 
