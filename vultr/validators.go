@@ -34,6 +34,16 @@ func validateIPAddress(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
+// validateReservedIPType ensures that the string value is either "v4" or "v6".
+func validateReservedIPType(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(string)
+	if value != "v6" && value != "v4" {
+		errors = append(errors, fmt.Errorf("%q must be either 'v4' or 'v6'", k))
+		return
+	}
+	return
+}
+
 // validateFirewallRuleProtocol ensures that the string value is a valid
 // firewall rule protocol and returns an error otherwise.
 func validateFirewallRuleProtocol(v interface{}, k string) (ws []string, errors []error) {
