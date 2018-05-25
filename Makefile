@@ -1,8 +1,8 @@
-.PHONY: all-release build fmt fmt-go fmt-terraform lint lint-go lint-terraform release test vendor vendor-status vet 
+.PHONY: all-release build clean fmt fmt-go fmt-terraform lint lint-go lint-terraform release test vendor vendor-status vet 
 
 ARCH ?= amd64
 PLATFORM ?= linux
-ALL_PLATFORMS := darwin linux
+ALL_PLATFORMS := darwin linux windows
 BIN := terraform-provider-vultr
 PKG := github.com/squat/$(BIN)
 BUILD_IMAGE ?= golang:1.10.0-alpine
@@ -115,3 +115,6 @@ vet:
 		echo "and fix them if necessary before submitting the code for review."; \
 		exit 1; \
 	fi
+
+clean:
+	@rm -rf bin
