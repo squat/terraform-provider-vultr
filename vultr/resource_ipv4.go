@@ -111,6 +111,11 @@ func resourceIPV4Read(d *schema.ResourceData, meta interface{}) error {
 
 	ips, err := client.ListIPv4(instance)
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "Invalid server.") {
+			log.Printf("[WARN] Removing IPv4 address (%s) because the attached instance (%s) is gone", d.Id(), instance)
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting IPv4 addresses: %v", err)
 	}
 	var ip *lib.IPv4
@@ -124,7 +129,6 @@ func resourceIPV4Read(d *schema.ResourceData, meta interface{}) error {
 		log.Printf("[WARN] Removing IPv4 address (%s) because it is gone", d.Id())
 		d.SetId("")
 		return nil
-
 	}
 
 	d.Set("gateway", ip.Gateway)
