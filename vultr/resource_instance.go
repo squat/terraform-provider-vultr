@@ -45,7 +45,6 @@ func resourceInstance() *schema.Resource {
 			"firewall_group_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "0",
 			},
 
 			"hostname": {
@@ -216,11 +215,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("cost_per_month", instance.Cost)
 	d.Set("default_password", instance.DefaultPassword)
 	d.Set("disk", instance.Disk)
-	if instance.FirewallGroupID == "" {
-		d.Set("firewall_group_id", "0")
-	} else {
-		d.Set("firewall_group_id", instance.FirewallGroupID)
-	}
+	d.Set("firewall_group_id", instance.FirewallGroupID)
 	d.Set("ipv4_address", instance.MainIP)
 	d.Set("ipv4_private_address", instance.InternalIP)
 	d.Set("name", instance.Name)
@@ -298,7 +293,18 @@ func resourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		log.Printf("[INFO] Updating instance (%s) OS", d.Id())
 		old, new := d.GetChange("os_id")
 		if err := client.ChangeOSofServer(d.Id(), new.(int)); err != nil {
-			return fmt.Errorf("Error changing OS of instance (%s) to %d: %v", d.Id(), new.(int), err)
+			var validOS string
+			os, oserr := client.ListOSforServer(d.Id())
+			if oserr != nil {
+				log.Printf("[Error] failed to get available OSs for instance (%s)", d.Id())
+			} else {
+				var oss []string
+				for i := range os {
+					oss = append(oss, strconv.FormatInt(int64(os[i].ID), 10))
+				}
+				validOS = fmt.Sprintf(" Valid OSs are %s", strings.Join(oss, ", "))
+			}
+			return fmt.Errorf("Error changing OS of instance (%s) to %d: %v%s", d.Id(), new.(int), err, validOS)
 		}
 		if _, err := waitForResourceState(d, meta, "instance", "os_id", resourceInstanceRead, strconv.FormatInt(int64(new.(int)), 10), []string{"", strconv.FormatInt(int64(old.(int)), 10)}); err != nil {
 			return err
