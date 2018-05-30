@@ -87,8 +87,8 @@ lint-go:
 	fi
 
 lint-terraform:
-	@echo "terraform fmt $(TERRAFORMFMT_FILES)"
-	@lint_res=$$(terraform fmt $(TERRAFORMFMT_FILES)); if [ -n "$$lint_res" ]; then \
+	@echo "terraform fmt --check=true $(TERRAFORMFMT_FILES)"
+	@lint_res=$$(terraform fmt --check=true $(TERRAFORMFMT_FILES)); if [ -n "$$lint_res" ]; then \
 		echo ""; \
 		echo "Terraform fmt found style issues. Please check the reported issues"; \
 		echo "and fix them if necessary before submitting the code for review:"; \
