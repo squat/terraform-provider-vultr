@@ -113,6 +113,11 @@ func resourceInstance() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"server_state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"snapshot_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -229,6 +234,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ram", instance.RAM)
 	d.Set("region_id", instance.RegionID)
 	d.Set("status", instance.Status)
+	d.Set("server_state", instance.ServerState)
 	d.Set("tag", instance.Tag)
 	d.Set("vcpus", instance.VCpus)
 
@@ -257,8 +263,8 @@ func resourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("application_id") {
 		log.Printf("[INFO] Updating instance (%s) application", d.Id())
 		old, new := d.GetChange("application_id")
-		if err := client.ChangeApplicationofServer(d.Id(), new.(string)); err != nil {
-			return fmt.Errorf("Error changing application of instance (%s) to %q: %v", d.Id(), new.(string), err)
+		if err := changeApplication(d.Id(), "instance", new.(string), client.ChangeApplicationofServer, client.ListApplicationsforServer); err != nil {
+			return err
 		}
 		if _, err := waitForResourceState(d, meta, "instance", "application_id", resourceInstanceRead, new.(string), []string{"", old.(string)}); err != nil {
 			return err
@@ -292,19 +298,8 @@ func resourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("os_id") {
 		log.Printf("[INFO] Updating instance (%s) OS", d.Id())
 		old, new := d.GetChange("os_id")
-		if err := client.ChangeOSofServer(d.Id(), new.(int)); err != nil {
-			var validOS string
-			os, oserr := client.ListOSforServer(d.Id())
-			if oserr != nil {
-				log.Printf("[Error] failed to get available OSs for instance (%s)", d.Id())
-			} else {
-				var oss []string
-				for i := range os {
-					oss = append(oss, strconv.FormatInt(int64(os[i].ID), 10))
-				}
-				validOS = fmt.Sprintf(" Valid OSs are %s", strings.Join(oss, ", "))
-			}
-			return fmt.Errorf("Error changing OS of instance (%s) to %d: %v%s", d.Id(), new.(int), err, validOS)
+		if err := changeOS(d.Id(), "instance", new.(int), client.ChangeOSofServer, client.ListOSforServer); err != nil {
+			return err
 		}
 		if _, err := waitForResourceState(d, meta, "instance", "os_id", resourceInstanceRead, strconv.FormatInt(int64(new.(int)), 10), []string{"", strconv.FormatInt(int64(old.(int)), 10)}); err != nil {
 			return err
@@ -334,9 +329,63 @@ func resourceInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[INFO] Destroying instance (%s)", d.Id())
 
-	if err := client.DeleteServer(d.Id()); err != nil {
-		return fmt.Errorf("Error destroying instance (%s): %v", d.Id(), err)
+	for {
+		// The Vultr API does not allow us to directly check the a server's state if it is being destroyed.
+		// However, we can infer this state from the responses of the destroy endpoint.
+		// If there was no error, then we need to try destroying again.
+		if err := client.DeleteServer(d.Id()); err != nil {
+			// Server is locked and still being destroyed. We need to try again.
+			if err.Error() == "Unable to destroy server: Unable to remove VM: Server is currently locked" {
+				continue
+			}
+			// Server does not exist so it has been deleted.
+			if strings.HasPrefix(err.Error(), "Invalid server.") {
+				break
+			}
+			// There was a legitimate error.
+			return fmt.Errorf("Error destroying instance (%s): %v", d.Id(), err)
+		}
 	}
 
+	return nil
+}
+
+// changeOS will try to change the OS of a instance or bare metal instance.
+// If there is an error, it will return an error with the list of valid OSs.
+func changeOS(id, resourceType string, new int, change func(string, int) error, list func(string) ([]lib.OS, error)) error {
+	if err := change(id, new); err != nil {
+		var validOS string
+		os, oserr := list(id)
+		if oserr != nil {
+			log.Printf("[Error] failed to get available OSs for %s (%s)", resourceType, id)
+		} else {
+			var oss []string
+			for i := range os {
+				oss = append(oss, strconv.FormatInt(int64(os[i].ID), 10))
+			}
+			validOS = fmt.Sprintf(" Valid OSs are %s", strings.Join(oss, ", "))
+		}
+		return fmt.Errorf("Error changing OS of %s (%s) to %d: %v%s", resourceType, id, new, err, validOS)
+	}
+	return nil
+}
+
+// changeApplication will try to change the appliation of a instance or bare metal instance.
+// If there is an error, it will return an error with the list of valid applications.
+func changeApplication(id, resourceType string, new string, change func(string, string) error, list func(string) ([]lib.Application, error)) error {
+	if err := change(id, new); err != nil {
+		var validApp string
+		app, apperr := list(id)
+		if apperr != nil {
+			log.Printf("[Error] failed to get available applications for %s (%s)", resourceType, id)
+		} else {
+			var apps []string
+			for i := range app {
+				apps = append(apps, app[i].ID)
+			}
+			validApp = fmt.Sprintf(" Valid applications are %s", strings.Join(apps, ", "))
+		}
+		return fmt.Errorf("Error changing application of %s (%s) to %s: %v%s", resourceType, id, new, err, validApp)
+	}
 	return nil
 }

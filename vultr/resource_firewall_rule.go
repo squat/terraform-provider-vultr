@@ -162,7 +162,7 @@ func resourceFirewallRuleDelete(d *schema.ResourceData, meta interface{}) error 
 	log.Printf("[INFO] Destroying firewall rule (%s)", d.Id())
 
 	if err := client.DeleteFirewallRule(id, firewallGroupID); err != nil {
-		return fmt.Errorf("Error destroying firewall group (%s): %v", d.Id(), err)
+		return fmt.Errorf("Error destroying firewall rule (%s): %v", d.Id(), err)
 	}
 
 	return nil

@@ -166,6 +166,7 @@ func resourceBareMetalRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		if err.Error() == "Invalid server." {
 			log.Printf("[WARN] Removing bare metal instance (%s) because it is gone", d.Id())
+			d.Set("status", "none")
 			d.SetId("")
 			return nil
 		}
@@ -214,8 +215,8 @@ func resourceBareMetalUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("application_id") {
 		log.Printf("[INFO] Updating bare metal instance (%s) application", d.Id())
 		old, new := d.GetChange("application_id")
-		if err := client.ChangeApplicationofBareMetalServer(d.Id(), new.(string)); err != nil {
-			return fmt.Errorf("Error changing application of instance (%s) to %q: %v", d.Id(), new.(string), err)
+		if err := changeApplication(d.Id(), "bare metal instance", new.(string), client.ChangeApplicationofBareMetalServer, client.ListApplicationsforBareMetalServer); err != nil {
+			return err
 		}
 		if _, err := waitForResourceState(d, meta, "bare metal instance", "application_id", resourceBareMetalRead, new.(string), []string{"", old.(string)}); err != nil {
 			return err
@@ -238,8 +239,8 @@ func resourceBareMetalUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("os_id") {
 		log.Printf("[INFO] Updating bare metal instance (%s) OS", d.Id())
 		old, new := d.GetChange("os_id")
-		if err := client.ChangeOSofBareMetalServer(d.Id(), new.(int)); err != nil {
-			return fmt.Errorf("Error changing OS of bare metal instance (%s) to %d: %v", d.Id(), new.(int), err)
+		if err := changeOS(d.Id(), "bare metal instance", new.(int), client.ChangeOSofBareMetalServer, client.ListOSforBareMetalServer); err != nil {
+			return err
 		}
 		if _, err := waitForResourceState(d, meta, "bare metal instance", "os_id", resourceBareMetalRead, strconv.FormatInt(int64(new.(int)), 10), []string{"", strconv.FormatInt(int64(old.(int)), 10)}); err != nil {
 			return err
@@ -271,6 +272,11 @@ func resourceBareMetalDelete(d *schema.ResourceData, meta interface{}) error {
 
 	if err := client.DeleteBareMetalServer(d.Id()); err != nil {
 		return fmt.Errorf("Error destroying bare metal instance (%s): %v", d.Id(), err)
+	}
+
+	// Wait for the instance to be fully destroyed.
+	if _, err := waitForResourceState(d, meta, "bare metal instance", "status", resourceBareMetalRead, "none", []string{"pending"}); err != nil {
+		return fmt.Errorf("Error waiting for bare metal instance (%s) to be destroyed: %v", d.Id(), err)
 	}
 
 	return nil
