@@ -141,13 +141,12 @@ func resourceFirewallRuleRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("direction", "in")
 	d.Set("firewall_group_id", firewallGroupID)
 	d.Set("protocol", firewallRule.Protocol)
-	ports := strings.Split(firewallRule.Port, ":")
-	port, _ := strconv.Atoi(ports[0])
-	d.Set("from_port", port)
-	if len(ports) == 2 {
-		port, _ = strconv.Atoi(ports[1])
+	from, to, err := splitFirewallRule(firewallRule.Port)
+	if err != nil {
+		return fmt.Errorf("Error parsing port range for firewall rule (%s): %v", d.Id(), err)
 	}
-	d.Set("to_port", port)
+	d.Set("from_port", from)
+	d.Set("to_port", to)
 
 	return nil
 }
@@ -166,4 +165,20 @@ func resourceFirewallRuleDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	return nil
+}
+
+func splitFirewallRule(portRange string) (int, int, error) {
+	ports := strings.Split(portRange, "-")
+	from, err := strconv.Atoi(strings.TrimSpace(ports[0]))
+	if err != nil {
+		return 0, 0, err
+	}
+	if len(ports) == 1 {
+		return from, from, nil
+	}
+	to, err := strconv.Atoi(strings.TrimSpace(ports[1]))
+	if err != nil {
+		return 0, 0, err
+	}
+	return from, to, nil
 }
