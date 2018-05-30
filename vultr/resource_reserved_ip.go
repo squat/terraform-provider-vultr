@@ -73,7 +73,7 @@ func resourceReservedIPCreate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("Error getting address for reserved ip (%s): %v", d.Id(), err)
 		}
-		err = client.AttachReservedIP(reservedIPtoCIDR(rip), aid)
+		err = client.AttachReservedIP(reservedIPToCIDR(rip), aid)
 		if err != nil {
 			return fmt.Errorf("Error attaching reserved ip (%s) to instance (%s): %v", d.Id(), aid, err)
 		}
@@ -97,7 +97,7 @@ func resourceReservedIPRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("attached_id", rip.AttachedTo)
-	d.Set("cidr", reservedIPtoCIDR(rip))
+	d.Set("cidr", reservedIPToCIDR(rip))
 	d.Set("name", rip.Label)
 	d.Set("region_id", rip.RegionID)
 	d.Set("type", rip.IPType)
@@ -147,6 +147,6 @@ func resourceReservedIPDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func reservedIPtoCIDR(rip lib.IP) string {
+func reservedIPToCIDR(rip lib.IP) string {
 	return fmt.Sprintf("%s/%d", rip.Subnet, rip.SubnetSize)
 }

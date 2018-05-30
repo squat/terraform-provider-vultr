@@ -3,14 +3,11 @@ package vultr
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/JamesClonk/vultr/lib"
 	"github.com/hashicorp/terraform/helper/schema"
 )
-
-const dnsRecordIDFormatErrTemplate = "DNS record ID must conform to <domain>/<record-ID>, where <record-ID> is an integer; got %q"
 
 func resourceDNSRecord() *schema.Resource {
 	return &schema.Resource{
@@ -104,14 +101,9 @@ func resourceDNSRecordCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceDNSRecordRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	idParts := strings.Split(d.Id(), "/")
-	if len(idParts) != 2 {
-		return fmt.Errorf(dnsRecordIDFormatErrTemplate, d.Id())
-	}
-	domain := idParts[0]
-	id, err := strconv.Atoi(idParts[1])
+	domain, id, err := parseStringSlashInt(d.Id(), "DNS record ID", "domain", "record-ID")
 	if err != nil {
-		return fmt.Errorf(dnsRecordIDFormatErrTemplate, d.Id())
+		return err
 	}
 
 	records, err := client.GetDNSRecords(domain)
@@ -151,9 +143,10 @@ func resourceDNSRecordRead(d *schema.ResourceData, meta interface{}) error {
 func resourceDNSRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	idParts := strings.Split(d.Id(), "/")
-	domain := idParts[0]
-	id, _ := strconv.Atoi(idParts[1])
+	domain, id, err := parseStringSlashInt(d.Id(), "DNS record ID", "domain", "record-ID")
+	if err != nil {
+		return err
+	}
 
 	record := lib.DNSRecord{
 		Data:     d.Get("data").(string),
@@ -174,9 +167,10 @@ func resourceDNSRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceDNSRecordDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	idParts := strings.Split(d.Id(), "/")
-	domain := idParts[0]
-	id, _ := strconv.Atoi(idParts[1])
+	domain, id, err := parseStringSlashInt(d.Id(), "DNS record ID", "domain", "record-ID")
+	if err != nil {
+		return err
+	}
 
 	log.Printf("[INFO] Destroying DNS record (%s)", d.Id())
 

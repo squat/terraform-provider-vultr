@@ -4,6 +4,15 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"strconv"
+	"strings"
+)
+
+const (
+	// stringSlashIntFormatErrTemplate is the default error template for parsing a string/int resource ID.
+	stringSlashIntFormatErrTemplate = "Error parsing %s: should be of form <%s>/<%s>, where <%s> is an integer; got %q"
+	// stringSlashStringFormatErrTemplate is the default error template for parsing a string/string resource ID.
+	stringSlashStringFormatErrTemplate = "Error parsing %s: should be of form <%s>/<%s>; got %q"
 )
 
 // validateCIDRNetworkAddress ensures that the string value is a valid CIDR that
@@ -81,4 +90,30 @@ func validateRegex(v interface{}, k string) (ws []string, errors []error) {
 		errors = append(errors, fmt.Errorf("%q contains an invalid regular expression: %v", k, err))
 	}
 	return
+}
+
+// parseStringSlashInt parses a commond ID format <string>/<int> into its components and returns
+// the provided error otherwise.
+func parseStringSlashInt(id, idType, first, second string) (string, int, error) {
+	baseErr := fmt.Errorf(stringSlashIntFormatErrTemplate, idType, first, second, second, id)
+	idParts := strings.Split(id, "/")
+	if len(idParts) != 2 {
+		return "", 0, baseErr
+	}
+	s := idParts[0]
+	i, err := strconv.Atoi(idParts[1])
+	if err != nil {
+		return "", 0, fmt.Errorf("%v: %v", baseErr, err)
+	}
+	return s, i, nil
+}
+
+// parseStringSlashString parses a commond ID format <string>/<string> into its components and returns
+// the provided error otherwise.
+func parseStringSlashString(id, idType, first, second string) (string, string, error) {
+	parts := strings.Split(id, "/")
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf(stringSlashStringFormatErrTemplate, idType, first, second, id)
+	}
+	return parts[0], parts[1], nil
 }

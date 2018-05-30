@@ -69,7 +69,10 @@ func resourceFirewallRule() *schema.Resource {
 func resourceFirewallRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	_, cidrBlock, _ := net.ParseCIDR(d.Get("cidr_block").(string))
+	_, cidrBlock, err := net.ParseCIDR(d.Get("cidr_block").(string))
+	if err != nil {
+		return fmt.Errorf("Error parsing %q for firewall rule: %v", "cidr_block", err)
+	}
 	firewallGroupID := d.Get("firewall_group_id").(string)
 	fromPort := d.Get("from_port").(int)
 	protocol := d.Get("protocol").(string)
@@ -108,9 +111,10 @@ func resourceFirewallRuleCreate(d *schema.ResourceData, meta interface{}) error 
 func resourceFirewallRuleRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	idParts := strings.Split(d.Id(), "/")
-	firewallGroupID := idParts[0]
-	id, _ := strconv.Atoi(idParts[1])
+	firewallGroupID, id, err := parseStringSlashInt(d.Id(), "firewall rule ID", "firewall-group-id", "firewall-rule-number")
+	if err != nil {
+		return err
+	}
 
 	firewallRules, err := client.GetFirewallRules(firewallGroupID)
 	if err != nil {
@@ -154,9 +158,10 @@ func resourceFirewallRuleRead(d *schema.ResourceData, meta interface{}) error {
 func resourceFirewallRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	idParts := strings.Split(d.Id(), "/")
-	firewallGroupID := idParts[0]
-	id, _ := strconv.Atoi(idParts[1])
+	firewallGroupID, id, err := parseStringSlashInt(d.Id(), "firewall rule ID", "firewall-group-id", "firewall-rule-number")
+	if err != nil {
+		return err
+	}
 
 	log.Printf("[INFO] Destroying firewall rule (%s)", d.Id())
 

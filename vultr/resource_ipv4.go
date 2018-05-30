@@ -104,7 +104,7 @@ func resourceIPV4Create(d *schema.ResourceData, meta interface{}) error {
 func resourceIPV4Read(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	instance, id, err := idFromData(d)
+	instance, id, err := parseStringSlashString(d.Id(), "IPv4 ID", "instance-id", "ip-address")
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func resourceIPV4Update(d *schema.ResourceData, meta interface{}) error {
 func resourceIPV4Delete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 
-	instance, id, err := idFromData(d)
+	instance, id, err := parseStringSlashString(d.Id(), "IPv4 ID", "instance-id", "ip-address")
 	if err != nil {
 		return err
 	}
@@ -158,14 +158,4 @@ func resourceIPV4Delete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return nil
-}
-
-// idFromData returns the IPv4 id components from the ResourceData ID,
-// which are, in order: the IPv4's associated instance, the actual IP, and any error.
-func idFromData(d *schema.ResourceData) (string, string, error) {
-	parts := strings.Split(d.Id(), "/")
-	if len(parts) != 2 {
-		return "", "", errors.New("Error parsing IPv4 ID: ID should be of form <instance-id>/<ip-address>")
-	}
-	return parts[0], parts[1], nil
 }
