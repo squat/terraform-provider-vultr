@@ -1,5 +1,5 @@
-hash: 079ce3ba8acd42c671561f593883507758a3257d306da1c5798aea56decb2d73
-updated: 2018-04-13T11:24:56.131046114+02:00
+hash: 8d8a2e46e722939f6c9202199c8c73694ab1de60939b788efc18f55920a11a32
+updated: 2018-05-31T01:02:03.75449749+02:00
 imports:
 - name: github.com/agext/levenshtein
   version: 5f10fee965225ac1eecdc234c09daf5cd9e7f7b6
@@ -149,7 +149,7 @@ imports:
 - name: github.com/hashicorp/yamux
   version: 2658be15c5f05e76244154714161f17e3e77de2e
 - name: github.com/JamesClonk/vultr
-  version: ee63e028f35bcafd35411640173990c97cc7f866
+  version: 3680bab6bd2092518dd238ac047b3ca2ea15f5ba
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath

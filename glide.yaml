@@ -3,7 +3,7 @@ import:
 - package: github.com/JamesClonk/vultr
   subpackages:
   - lib
-  version: ee63e028f35bcafd35411640173990c97cc7f866
+  version: 3680bab6bd2092518dd238ac047b3ca2ea15f5ba
 - package: github.com/fatih/structs
 - package: github.com/hashicorp/terraform
   subpackages:
