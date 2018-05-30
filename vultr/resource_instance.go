@@ -80,6 +80,14 @@ func resourceInstance() *schema.Resource {
 				Optional: true,
 			},
 
+			"network_ids": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
 			"os_id": {
 				Type:     schema.TypeInt,
 				Required: true,
@@ -180,6 +188,12 @@ func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	planID := d.Get("plan_id").(int)
 	regionID := d.Get("region_id").(int)
 
+	netIDs := make([]string, d.Get("network_ids.#").(int))
+	for i, id := range d.Get("network_ids").([]interface{}) {
+		netIDs[i] = id.(string)
+	}
+	options.Networks = netIDs
+
 	keyIDs := make([]string, d.Get("ssh_key_ids.#").(int))
 	for i, id := range d.Get("ssh_key_ids").([]interface{}) {
 		keyIDs[i] = id.(string)
@@ -216,6 +230,15 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting instance (%s): %v", d.Id(), err)
 	}
 
+	networks, err := client.ListPrivateNetworksForServer(d.Id())
+	if err != nil {
+		return fmt.Errorf("Error getting networks for instance (%s): %v", d.Id(), err)
+	}
+	var networkIDs []string
+	for _, n := range networks {
+		networkIDs = append(networkIDs, n.ID)
+	}
+
 	d.Set("application_id", instance.AppID)
 	d.Set("cost_per_month", instance.Cost)
 	d.Set("default_password", instance.DefaultPassword)
@@ -228,6 +251,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("OS ID must be an integer: %v", err)
 	}
+	d.Set("network_ids", networkIDs)
 	d.Set("os_id", osID)
 	d.Set("plan_id", instance.PlanID)
 	d.Set("power_status", instance.PowerStatus)
