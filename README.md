@@ -110,6 +110,7 @@ resource "vultr_firewall_rule" "ssh" {
 To develop the plugin locally, install the following dependencies:
 * [Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
 * [Glide](https://github.com/Masterminds/glide#install) (to install and maintain dependencies)
+* [glide-vc](https://github.com/sgotti/glide-vc#install) (to clean up dependencies)
 
 To build the plugin run:
 ```sh

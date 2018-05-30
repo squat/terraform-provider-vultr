@@ -103,6 +103,7 @@ test: vet lint
 
 vendor:
 	@glide install -v
+	@glide-vc --only-code --no-tests
 
 vendor-status:
 	@glide list
