@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/JamesClonk/vultr/lib"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -23,6 +24,11 @@ func dataSourceSnapshot() *schema.Resource {
 				ValidateFunc: validateRegex,
 			},
 
+			"application_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"created": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -30,6 +36,11 @@ func dataSourceSnapshot() *schema.Resource {
 
 			"description": {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"os_id": {
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 
@@ -92,9 +103,16 @@ func dataSourceSnapshotRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("The query for snapshots returned %d results. Please make the search criteria more specific and try again", len(snapshots))
 	}
 
+	osID, err := strconv.Atoi(snapshots[0].OSID)
+	if err != nil {
+		return fmt.Errorf("OS ID must be an integer: %v", err)
+	}
+
 	d.SetId(snapshots[0].ID)
+	d.Set("application_id", snapshots[0].AppID)
 	d.Set("description", snapshots[0].Description)
 	d.Set("created", snapshots[0].Created)
+	d.Set("os_id", osID)
 	d.Set("size", snapshots[0].Size)
 	d.Set("status", snapshots[0].Status)
 	return nil

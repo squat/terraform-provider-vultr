@@ -239,6 +239,11 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		networkIDs = append(networkIDs, n.ID)
 	}
 
+	osID, err := strconv.Atoi(instance.OSID)
+	if err != nil {
+		return fmt.Errorf("OS ID must be an integer: %v", err)
+	}
+
 	d.Set("application_id", instance.AppID)
 	d.Set("cost_per_month", instance.Cost)
 	d.Set("default_password", instance.DefaultPassword)
@@ -247,10 +252,6 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ipv4_address", instance.MainIP)
 	d.Set("ipv4_private_address", instance.InternalIP)
 	d.Set("name", instance.Name)
-	osID, err := strconv.Atoi(instance.OSID)
-	if err != nil {
-		return fmt.Errorf("OS ID must be an integer: %v", err)
-	}
 	d.Set("network_ids", networkIDs)
 	d.Set("os_id", osID)
 	d.Set("plan_id", instance.PlanID)

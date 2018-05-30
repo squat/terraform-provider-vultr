@@ -173,16 +173,17 @@ func resourceBareMetalRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting bare metal instance (%s): %v", d.Id(), err)
 	}
 
+	osID, err := strconv.Atoi(instance.OSID)
+	if err != nil {
+		return fmt.Errorf("OS ID must be an integer: %v", err)
+	}
+
 	d.Set("application_id", instance.AppID)
 	d.Set("cpus", instance.CPUs)
 	d.Set("default_password", instance.DefaultPassword)
 	d.Set("disk", instance.Disk)
 	d.Set("ipv4_address", instance.MainIP)
 	d.Set("name", instance.Name)
-	osID, err := strconv.Atoi(instance.OSID)
-	if err != nil {
-		return fmt.Errorf("OS ID must be an integer: %v", err)
-	}
 	d.Set("os_id", osID)
 	d.Set("plan_id", instance.PlanID)
 	d.Set("ram", instance.RAM)
