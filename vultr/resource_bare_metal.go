@@ -23,6 +23,7 @@ func resourceBareMetal() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"application_id": {
 				Type:     schema.TypeString,
+				Computed: true,
 				Optional: true,
 			},
 
@@ -72,7 +73,8 @@ func resourceBareMetal() *schema.Resource {
 
 			"os_id": {
 				Type:     schema.TypeInt,
-				Required: true,
+				Computed: true,
+				Optional: true,
 			},
 
 			"plan_id": {
@@ -125,6 +127,16 @@ func resourceBareMetal() *schema.Resource {
 }
 
 func resourceBareMetalCreate(d *schema.ResourceData, meta interface{}) error {
+	_, appOK := d.GetOk("application_id")
+	_, osOK := d.GetOk("os_id")
+	_, snapshotOK := d.GetOk("snapshot_id")
+	if appOK == snapshotOK {
+		return fmt.Errorf("One of %q and %q must be provided but not both", "application_id", "snapshot_id")
+	}
+	if osOK == snapshotOK {
+		return fmt.Errorf("One of %q and %q must be provided but not both", "os_id", "snapshot_id")
+	}
+
 	client := meta.(*Client)
 	options := &lib.BareMetalServerOptions{
 		AppID:    d.Get("application_id").(string),
@@ -136,7 +148,12 @@ func resourceBareMetalCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	name := d.Get("name").(string)
-	osID := d.Get("os_id").(int)
+	var osID int
+	if snapshotOK {
+		osID = osIDSnapshot
+	} else {
+		osID = d.Get("os_id").(int)
+	}
 	planID := d.Get("plan_id").(int)
 	regionID := d.Get("region_id").(int)
 

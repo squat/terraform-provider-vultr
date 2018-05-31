@@ -4,14 +4,6 @@ provider "vultr" {
   api_key = "<your-vultr-api-key>"
 }
 
-// Find the OS ID for snapshots.
-data "vultr_os" "snapshot" {
-  filter {
-    name   = "family"
-    values = ["snapshot"]
-  }
-}
-
 // Find the snapshot ID for a Kubernetes master.
 data "vultr_snapshot" "master" {
   description_regex = "master"
@@ -21,7 +13,7 @@ data "vultr_snapshot" "master" {
 data "vultr_region" "silicon_valley" {
   filter {
     name   = "name"
-    values = ["Silicon Valley"]
+    values = ["Frankfurt"]
   }
 }
 
@@ -39,11 +31,9 @@ data "vultr_plan" "starter" {
 }
 
 // Create a Vultr virtual machine.
-resource "vultr_instance" "master" {
-  name        = "master"
-  hostname    = "master"
+resource "vultr_instance" "snapshot" {
+  name        = "snapshot"
   region_id   = "${data.vultr_region.silicon_valley.id}"
   plan_id     = "${data.vultr_plan.starter.id}"
-  os_id       = "${data.vultr_os.snapshot.id}"
   snapshot_id = "${data.vultr_snapshot.master.id}"
 }
