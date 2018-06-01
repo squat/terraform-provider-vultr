@@ -177,6 +177,9 @@ func splitFirewallRule(portRange string) (int, int, error) {
 		return 0, 0, nil
 	}
 	ports := strings.Split(portRange, "-")
+	if len(strings.TrimSpace(ports[0])) == 0 {
+		return 0, 0, nil
+	}
 	from, err := strconv.Atoi(strings.TrimSpace(ports[0]))
 	if err != nil {
 		return 0, 0, err
