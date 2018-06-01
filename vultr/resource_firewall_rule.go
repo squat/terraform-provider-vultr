@@ -173,6 +173,9 @@ func resourceFirewallRuleDelete(d *schema.ResourceData, meta interface{}) error 
 }
 
 func splitFirewallRule(portRange string) (int, int, error) {
+	if len(portRange) == 0 {
+		return 0, 0, nil
+	}
 	ports := strings.Split(portRange, "-")
 	from, err := strconv.Atoi(strings.TrimSpace(ports[0]))
 	if err != nil {
