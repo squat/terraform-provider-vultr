@@ -179,9 +179,11 @@ func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	_, appOK := d.GetOk("application_id")
 	_, osOK := d.GetOk("os_id")
 	_, snapshotOK := d.GetOk("snapshot_id")
-	if appOK == snapshotOK {
-		return fmt.Errorf("One of %q and %q must be provided but not both", "application_id", "snapshot_id")
+	// At most one.
+	if appOK && snapshotOK {
+		return fmt.Errorf("Only one of %q and %q may be provided but not both", "application_id", "snapshot_id")
 	}
+	// Exactly one.
 	if osOK == snapshotOK {
 		return fmt.Errorf("One of %q and %q must be provided but not both", "os_id", "snapshot_id")
 	}
