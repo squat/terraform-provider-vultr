@@ -30,6 +30,12 @@ func TestSplitFirewallRule(t *testing.T) {
 			err:       false,
 		},
 		{
+			portRange: " - ",
+			from:      0,
+			to:        0,
+			err:       false,
+		},
+		{
 			portRange: "22",
 			from:      22,
 			to:        22,
