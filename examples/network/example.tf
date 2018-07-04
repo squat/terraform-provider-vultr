@@ -48,4 +48,10 @@ resource "vultr_instance" "ubuntu" {
   region_id   = "${data.vultr_region.frankfurt.id}"
   plan_id     = "${data.vultr_plan.starter.id}"
   os_id       = "${data.vultr_os.ubuntu.id}"
+  ipv6        = true
+}
+
+// Output all of the virtual machine's IPv6 addresses to STDOUT when the infrastructure is ready.
+output ip_addresses {
+  value = "${vultr_instance.ubuntu.ipv6_addresses}"
 }
