@@ -3,6 +3,7 @@ package vultr
 import (
 	"fmt"
 	"log"
+	"net"
 	"strconv"
 	"strings"
 
@@ -63,7 +64,7 @@ func resourceInstance() *schema.Resource {
 				Computed: true,
 			},
 
-			"ipv4_private_address": {
+			"ipv4_private_cidr": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -83,6 +84,12 @@ func resourceInstance() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+
+			"networks": {
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
 			"network_ids": {
@@ -257,8 +264,10 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error getting networks for instance (%s): %v", d.Id(), err)
 	}
+	nets := make(map[string]string)
 	var networkIDs []string
 	for _, n := range networks {
+		nets[n.ID] = n.IPAddress
 		networkIDs = append(networkIDs, n.ID)
 	}
 
@@ -273,8 +282,10 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("disk", instance.Disk)
 	d.Set("firewall_group_id", instance.FirewallGroupID)
 	d.Set("ipv4_address", instance.MainIP)
-	d.Set("ipv4_private_address", instance.InternalIP)
+	size, _ := parseIPv4Mask(instance.NetmaskV4).Size()
+	d.Set("ipv4_private_cidr", fmt.Sprintf("%s/%d", instance.InternalIP, size))
 	d.Set("name", instance.Name)
+	d.Set("networks", nets)
 	d.Set("network_ids", networkIDs)
 	d.Set("os_id", osID)
 	d.Set("plan_id", instance.PlanID)
@@ -436,4 +447,12 @@ func changeApplication(id, resourceType string, new string, change func(string, 
 		return fmt.Errorf("Error changing application of %s (%s) to %s: %v%s", resourceType, id, new, err, validApp)
 	}
 	return nil
+}
+
+func parseIPv4Mask(s string) net.IPMask {
+	mask := net.ParseIP(s)
+	if mask == nil {
+		return nil
+	}
+	return net.IPv4Mask(mask[12], mask[13], mask[14], mask[15])
 }
