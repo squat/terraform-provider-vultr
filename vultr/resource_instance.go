@@ -262,7 +262,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 	networks, err := client.ListPrivateNetworksForServer(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error getting networks for instance (%s): %v", d.Id(), err)
+		return fmt.Errorf("Error getting private networks for instance (%s): %v", d.Id(), err)
 	}
 	nets := make(map[string]string)
 	var networkIDs []string
@@ -276,13 +276,32 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("OS ID must be an integer: %v", err)
 	}
 
+	var size int
+	if instance.InternalIP != "" {
+		ipv4s, err := client.ListIPv4(d.Id())
+		if err != nil {
+			return fmt.Errorf("Error getting IPv4 networks for instance (%s): %v", d.Id(), err)
+		}
+		err = func() error {
+			for _, n := range ipv4s {
+				if n.IP == instance.InternalIP {
+					size, _ = parseIPv4Mask(n.Netmask).Size()
+					return nil
+				}
+			}
+			return fmt.Errorf("no matching address for %q in IPv4 list", instance.InternalIP)
+		}()
+		if err != nil {
+			return fmt.Errorf("Error finding private IPv4 subnet mask for instance (%s): %v", d.Id(), err)
+		}
+	}
+
 	d.Set("application_id", instance.AppID)
 	d.Set("cost_per_month", instance.Cost)
 	d.Set("default_password", instance.DefaultPassword)
 	d.Set("disk", instance.Disk)
 	d.Set("firewall_group_id", instance.FirewallGroupID)
 	d.Set("ipv4_address", instance.MainIP)
-	size, _ := parseIPv4Mask(instance.NetmaskV4).Size()
 	d.Set("ipv4_private_cidr", fmt.Sprintf("%s/%d", instance.InternalIP, size))
 	d.Set("name", instance.Name)
 	d.Set("networks", nets)
