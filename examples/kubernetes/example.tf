@@ -4,7 +4,7 @@ resource "vultr_dns_domain" "example" {
 }
 
 module "typhoon" {
-  source = "git::https://github.com/squat/typhoon-vultr?ref=v1.11.2"
+  source = "git::https://github.com/squat/typhoon-vultr?ref=v1.11.3"
 
   cluster_name = "example"
 
