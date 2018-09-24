@@ -32,6 +32,12 @@ func resourceInstance() *schema.Resource {
 				Optional: true,
 			},
 
+			"auto_backups": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+			},
+
 			"cost_per_month": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -198,6 +204,7 @@ func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 	options := &lib.ServerOptions{
 		AppID:             d.Get("application_id").(string),
+		AutoBackups:       d.Get("auto_backups").(bool),
 		FirewallGroupID:   d.Get("firewall_group_id").(string),
 		Hostname:          d.Get("hostname").(string),
 		IPV6:              d.Get("ipv6").(bool),
@@ -297,6 +304,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("application_id", instance.AppID)
+	d.Set("auto_backups", instance.AutoBackups)
 	d.Set("cost_per_month", instance.Cost)
 	d.Set("default_password", instance.DefaultPassword)
 	d.Set("disk", instance.Disk)
