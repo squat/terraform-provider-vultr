@@ -28,11 +28,12 @@ func Provider() terraform.ResourceProvider {
 			"vultr_region":          dataSourceRegion(),
 			"vultr_snapshot":        dataSourceSnapshot(),
 			"vultr_ssh_key":         dataSourceSSHKey(),
+			"vultr_startup_script":  dataSourceStartupScript(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"vultr_block_storage":  resourceBlockStorage(),
 			"vultr_bare_metal":     resourceBareMetal(),
+			"vultr_block_storage":  resourceBlockStorage(),
 			"vultr_dns_domain":     resourceDNSDomain(),
 			"vultr_dns_record":     resourceDNSRecord(),
 			"vultr_firewall_group": resourceFirewallGroup(),
@@ -41,8 +42,8 @@ func Provider() terraform.ResourceProvider {
 			"vultr_ipv4":           resourceIPV4(),
 			"vultr_network":        resourceNetwork(),
 			"vultr_reserved_ip":    resourceReservedIP(),
-			"vultr_startup_script": resourceStartupScript(),
 			"vultr_ssh_key":        resourceSSHKey(),
+			"vultr_startup_script": resourceStartupScript(),
 		},
 
 		ConfigureFunc: providerConfigure,
