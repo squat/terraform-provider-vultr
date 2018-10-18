@@ -424,6 +424,12 @@ func resourceInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 			if err.Error() == "Unable to destroy server: Unable to remove VM: Server is currently locked" {
 				continue
 			}
+
+			// Server is pending destruction. We need to wait and try again.
+			if err.Error() == "Unable to destroy server: Server is already pending destruction." {
+				continue
+			}
+
 			// Server does not exist so it has been deleted.
 			if strings.HasPrefix(err.Error(), "Invalid server.") {
 				break
