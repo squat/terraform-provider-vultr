@@ -106,6 +106,12 @@ func resourceInstance() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
+			"notify_activate": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+			},
+
 			"os_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -203,16 +209,17 @@ func resourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 
 	client := meta.(*Client)
 	options := &lib.ServerOptions{
-		AppID:             d.Get("application_id").(string),
-		AutoBackups:       d.Get("auto_backups").(bool),
-		FirewallGroupID:   d.Get("firewall_group_id").(string),
-		Hostname:          d.Get("hostname").(string),
-		IPV6:              d.Get("ipv6").(bool),
-		PrivateNetworking: d.Get("private_networking").(bool),
-		Script:            d.Get("startup_script_id").(int),
-		Snapshot:          d.Get("snapshot_id").(string),
-		Tag:               d.Get("tag").(string),
-		UserData:          d.Get("user_data").(string),
+		AppID:                d.Get("application_id").(string),
+		AutoBackups:          d.Get("auto_backups").(bool),
+		DontNotifyOnActivate: !d.Get("notify_activate").(bool),
+		FirewallGroupID:      d.Get("firewall_group_id").(string),
+		Hostname:             d.Get("hostname").(string),
+		IPV6:                 d.Get("ipv6").(bool),
+		PrivateNetworking:    d.Get("private_networking").(bool),
+		Script:               d.Get("startup_script_id").(int),
+		Snapshot:             d.Get("snapshot_id").(string),
+		Tag:                  d.Get("tag").(string),
+		UserData:             d.Get("user_data").(string),
 	}
 
 	name := d.Get("name").(string)

@@ -71,6 +71,12 @@ func resourceBareMetal() *schema.Resource {
 				Optional: true,
 			},
 
+			"notify_activate": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+			},
+
 			"os_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -141,12 +147,13 @@ func resourceBareMetalCreate(d *schema.ResourceData, meta interface{}) error {
 
 	client := meta.(*Client)
 	options := &lib.BareMetalServerOptions{
-		AppID:    d.Get("application_id").(string),
-		Hostname: d.Get("hostname").(string),
-		IPV6:     d.Get("ipv6").(bool),
-		Script:   d.Get("startup_script_id").(int),
-		Snapshot: d.Get("snapshot_id").(string),
-		Tag:      d.Get("tag").(string),
+		AppID:                d.Get("application_id").(string),
+		DontNotifyOnActivate: !d.Get("notify_activate").(bool),
+		Hostname:             d.Get("hostname").(string),
+		IPV6:                 d.Get("ipv6").(bool),
+		Script:               d.Get("startup_script_id").(int),
+		Snapshot:             d.Get("snapshot_id").(string),
+		Tag:                  d.Get("tag").(string),
 	}
 
 	name := d.Get("name").(string)
