@@ -3,6 +3,7 @@ package vultr
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -60,7 +61,7 @@ func resourceFirewallGroupRead(d *schema.ResourceData, meta interface{}) error {
 
 	firewallGroup, err := client.GetFirewallGroup(d.Id())
 	if err != nil {
-		if err.Error() == fmt.Sprintf("Firewall group with ID %v not found", d.Id()) {
+		if strings.HasPrefix(err.Error(), fmt.Sprintf("Firewall group with ID %v not found", d.Id())) {
 			log.Printf("[WARN] Removing firewall group (%s) because it is gone", d.Id())
 			d.SetId("")
 			return nil

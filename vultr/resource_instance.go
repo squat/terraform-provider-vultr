@@ -266,7 +266,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 	instance, err := client.GetServer(d.Id())
 	if err != nil {
-		if err.Error() == "Invalid server." {
+		if strings.HasPrefix(err.Error(), "Invalid server") {
 			log.Printf("[WARN] Removing instance (%s) because it is gone", d.Id())
 			d.SetId("")
 			return nil
@@ -438,7 +438,7 @@ func resourceInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 			}
 
 			// Server does not exist so it has been deleted.
-			if strings.HasPrefix(err.Error(), "Invalid server.") {
+			if strings.HasPrefix(err.Error(), "Invalid server") {
 				break
 			}
 			// There was a legitimate error.

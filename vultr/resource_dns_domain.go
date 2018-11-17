@@ -77,7 +77,7 @@ func resourceDNSDomainRead(d *schema.ResourceData, meta interface{}) error {
 	// Find the default record for the domain.
 	records, err := client.GetDNSRecords(dnsDomain.Domain)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "Invalid domain.") {
+		if strings.HasPrefix(err.Error(), "Invalid domain") {
 			log.Printf("[WARN] Removing DNS domain (%s) because it has no default record", d.Id())
 			d.SetId("")
 			return nil

@@ -3,6 +3,7 @@ package vultr
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/JamesClonk/vultr/lib"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -87,13 +88,12 @@ func resourceReservedIPRead(d *schema.ResourceData, meta interface{}) error {
 
 	rip, err := client.GetReservedIP(d.Id())
 	if err != nil {
+		if strings.HasPrefix(err.Error(), fmt.Sprintf("IP with ID %v not found", d.Id())) {
+			log.Printf("[WARN] Removing reserved ip (%s) because it is gone", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error getting reserved ip (%s): %v", d.Id(), err)
-	}
-
-	if rip == (lib.IP{}) {
-		log.Printf("[WARN] Removing reserved ip (%s) because it is gone", d.Id())
-		d.SetId("")
-		return nil
 	}
 
 	d.Set("attached_id", rip.AttachedTo)

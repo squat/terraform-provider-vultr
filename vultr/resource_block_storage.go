@@ -3,6 +3,7 @@ package vultr
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -86,7 +87,7 @@ func resourceBlockStorageRead(d *schema.ResourceData, meta interface{}) error {
 
 	storage, err := client.GetBlockStorage(d.Id())
 	if err != nil {
-		if err.Error() == "Invalid block storage." {
+		if strings.HasPrefix(err.Error(), "Invalid block storage") {
 			log.Printf("[WARN] Removing block storage (%s) because it is gone", d.Id())
 			d.SetId("")
 			return nil
@@ -161,7 +162,7 @@ func resourceBlockStorageDelete(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 	if err := client.DeleteBlockStorage(d.Id()); err != nil {
-		return fmt.Errorf("Error block storage (%s): %v", d.Id(), err)
+		return fmt.Errorf("Error destroying block storage (%s): %v", d.Id(), err)
 	}
 
 	return nil

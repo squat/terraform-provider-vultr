@@ -190,7 +190,7 @@ func resourceBareMetalRead(d *schema.ResourceData, meta interface{}) error {
 
 	instance, err := client.GetBareMetalServer(d.Id())
 	if err != nil {
-		if err.Error() == "Invalid server." {
+		if strings.HasPrefix(err.Error(), "Invalid server") {
 			log.Printf("[WARN] Removing bare metal instance (%s) because it is gone", d.Id())
 			d.Set("status", "none")
 			d.SetId("")

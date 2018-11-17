@@ -108,7 +108,7 @@ func resourceDNSRecordRead(d *schema.ResourceData, meta interface{}) error {
 
 	records, err := client.GetDNSRecords(domain)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "Invalid domain.") {
+		if strings.HasPrefix(err.Error(), "Invalid domain") {
 			log.Printf("[WARN] Removing DNS record (%s) because the domain is gone", d.Id())
 			d.SetId("")
 			return nil
