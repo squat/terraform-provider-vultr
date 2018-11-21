@@ -102,7 +102,6 @@ func resourceInstance() *schema.Resource {
 				Type:     schema.TypeList,
 				Computed: true,
 				Optional: true,
-				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
@@ -388,6 +387,32 @@ func resourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		d.SetPartial("name")
 	}
 
+	if d.HasChange("network_ids") {
+		log.Printf("[INFO] Updating instance (%s) networks", d.Id())
+		old, new := d.GetChange("network_ids")
+		oldIDs := make([]string, len(old.([]interface{})))
+		for i, id := range old.([]interface{}) {
+			oldIDs[i] = id.(string)
+		}
+		newIDs := make([]string, len(new.([]interface{})))
+		for i, id := range new.([]interface{}) {
+			newIDs[i] = id.(string)
+		}
+		add := stringsDiff(oldIDs, newIDs)
+		del := stringsDiff(newIDs, oldIDs)
+		for _, n := range add {
+			if err := client.EnablePrivateNetworkForServer(d.Id(), n); err != nil {
+				return fmt.Errorf("Error attaching instance (%s) to private network %q: %v", d.Id(), n, err)
+			}
+		}
+		for _, n := range del {
+			if err := client.DisablePrivateNetworkForServer(d.Id(), n); err != nil {
+				return fmt.Errorf("Error detaching instance (%s) to private network %q: %v", d.Id(), n, err)
+			}
+		}
+		d.SetPartial("network_ids")
+	}
+
 	if d.HasChange("os_id") {
 		log.Printf("[INFO] Updating instance (%s) OS", d.Id())
 		old, new := d.GetChange("os_id")
@@ -469,7 +494,7 @@ func changeOS(id, resourceType string, new int, change func(string, int) error, 
 	return nil
 }
 
-// changeApplication will try to change the appliation of a instance or bare metal instance.
+// changeApplication will try to change the appliation of an instance or bare metal instance.
 // If there is an error, it will return an error with the list of valid applications.
 func changeApplication(id, resourceType string, new string, change func(string, string) error, list func(string) ([]lib.Application, error)) error {
 	if err := change(id, new); err != nil {
@@ -495,4 +520,20 @@ func parseIPv4Mask(s string) net.IPMask {
 		return nil
 	}
 	return net.IPv4Mask(mask[12], mask[13], mask[14], mask[15])
+}
+
+// stringsDiff returns the strings that are in after and not
+// in before.
+func stringsDiff(before []string, after []string) []string {
+	var diff []string
+	b := map[string]struct{}{}
+	for i := range before {
+		b[before[i]] = struct{}{}
+	}
+	for i := range after {
+		if _, ok := b[after[i]]; !ok {
+			diff = append(diff, after[i])
+		}
+	}
+	return diff
 }
