@@ -70,6 +70,16 @@ func resourceInstance() *schema.Resource {
 				Computed: true,
 			},
 
+			"ipv4_gateway": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"ipv4_mask": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"ipv4_private_cidr": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -316,6 +326,8 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("disk", instance.Disk)
 	d.Set("firewall_group_id", instance.FirewallGroupID)
 	d.Set("ipv4_address", instance.MainIP)
+	d.Set("ipv4_gateway", instance.GatewayV4)
+	d.Set("ipv4_mask", instance.NetmaskV4)
 	d.Set("ipv4_private_cidr", fmt.Sprintf("%s/%d", instance.InternalIP, size))
 	d.Set("name", instance.Name)
 	d.Set("networks", nets)
