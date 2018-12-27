@@ -147,9 +147,9 @@ imports:
   - tfdiags
   - version
 - name: github.com/hashicorp/yamux
-  version: 2658be15c5f05e76244154714161f17e3e77de2e
+  version: 2f1d1f20f75d5404f53b9edf6b53ed5505508675
 - name: github.com/JamesClonk/vultr
-  version: 3680bab6bd2092518dd238ac047b3ca2ea15f5ba
+  version: 882c666acc57cfc9fb3ccd8132655609092eb4af
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
