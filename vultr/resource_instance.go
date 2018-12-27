@@ -75,6 +75,11 @@ func resourceInstance() *schema.Resource {
 				Computed: true,
 			},
 
+			"ipv4_mac": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"ipv4_mask": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -299,12 +304,30 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("OS ID must be an integer: %v", err)
 	}
 
+	ipv4s, err := client.ListIPv4(d.Id())
+	if err != nil {
+		return fmt.Errorf("Error getting IPv4 networks for instance (%s): %v", d.Id(), err)
+	}
+
+	var mainMac string
+	err = func() error {
+		for _, n := range ipv4s {
+			if n.Type == "main_ip" {
+				mainMac = n.MAC
+				if mainMac == "" {
+					return fmt.Errorf("no MAC returned for main_ip")
+				}
+				return nil
+			}
+		}
+		return fmt.Errorf("no address of type main_ip found")
+	}()
+	if err != nil {
+		return fmt.Errorf("Error finding main interface MAC for instance (%s): %v", d.Id(), err)
+	}
+
 	var size int
 	if instance.InternalIP != "" {
-		ipv4s, err := client.ListIPv4(d.Id())
-		if err != nil {
-			return fmt.Errorf("Error getting IPv4 networks for instance (%s): %v", d.Id(), err)
-		}
 		err = func() error {
 			for _, n := range ipv4s {
 				if n.IP == instance.InternalIP {
@@ -327,6 +350,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("firewall_group_id", instance.FirewallGroupID)
 	d.Set("ipv4_address", instance.MainIP)
 	d.Set("ipv4_gateway", instance.GatewayV4)
+	d.Set("ipv4_mac", mainMac)
 	d.Set("ipv4_mask", instance.NetmaskV4)
 	d.Set("ipv4_private_cidr", fmt.Sprintf("%s/%d", instance.InternalIP, size))
 	d.Set("name", instance.Name)
