@@ -120,6 +120,12 @@ func resourceInstance() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
+			"network_macs": {
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
 			"notify_activate": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -293,9 +299,11 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error getting private networks for instance (%s): %v", d.Id(), err)
 	}
 	nets := make(map[string]string)
+	netMACs := make(map[string]string)
 	var networkIDs []string
 	for _, n := range networks {
 		nets[n.ID] = n.IPAddress
+		netMACs[n.ID] = n.MACAddress
 		networkIDs = append(networkIDs, n.ID)
 	}
 
@@ -355,6 +363,7 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ipv4_private_cidr", fmt.Sprintf("%s/%d", instance.InternalIP, size))
 	d.Set("name", instance.Name)
 	d.Set("networks", nets)
+	d.Set("network_macs", netMACs)
 	d.Set("network_ids", networkIDs)
 	d.Set("os_id", osID)
 	d.Set("plan_id", instance.PlanID)
