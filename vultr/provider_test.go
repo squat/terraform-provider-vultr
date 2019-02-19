@@ -7,7 +7,10 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-var _ terraform.ResourceProvider = Provider()
+var testAccProvider = Provider().(*schema.Provider)
+var testAccProviders = map[string]terraform.ResourceProvider{
+	"vultr": testAccProvider,
+}
 
 func TestProvider(t *testing.T) {
 	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
