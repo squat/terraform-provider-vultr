@@ -1,4 +1,4 @@
-.PHONY: all-release build clean fmt fmt-go fmt-terraform lint lint-go lint-terraform release test vendor vendor-status vet 
+.PHONY: all-release build clean errcheck fmt fmt-go fmt-terraform fmtcheck lint lint-go lint-terraform release test test-compile testacc sweep vendor vendor-status vet
 
 ARCH ?= amd64
 PLATFORM ?= linux
@@ -9,6 +9,7 @@ BUILD_IMAGE ?= golang:1.10.0-alpine
 TEST ?= $$(go list ./... | grep -v 'vendor/')
 GOFMT_FILES ?= $$(find . -name '*.go' | grep -v vendor)
 SRC := $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+SWEEP?=us-east-1,us-west-2
 TERRAFORMFMT_FILES ?= examples
 TESTARGS ?=
 TAG := $(shell git describe --abbrev=0 --tags HEAD 2>/dev/null)
@@ -24,7 +25,7 @@ VERSION := $(VERSION)$(DIRTY)
 
 default: build
 
-build:
+build: fmtcheck
 	go install
 
 all-release: $(addprefix release-, $(ALL_PLATFORMS))
@@ -56,12 +57,15 @@ bin/$(PLATFORM)/$(ARCH)/$(BIN)_$(VERSION): $(SRC) glide.yaml bin/$(PLATFORM)/$(A
 	        GOOS=$(PLATFORM) \
 		CGO_ENABLED=0 \
 		go build -o /go/bin/$(BIN)_$(VERSION) \
-	    "
+	    "	
 
 fmt: fmt-go fmt-terraform
 
 fmt-go:
 	gofmt -w -s $(GOFMT_FILES)
+
+fmtcheck:
+	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
 fmt-terraform:
 	terraform fmt $(TERRAFORMFMT_FILES)
@@ -96,17 +100,16 @@ lint-terraform:
 		exit 1; \
 	fi
 
+sweep:
+	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
+	go test $(TEST) -v -sweep=$(SWEEP) $(SWEEPARGS)
 
-test: vet lint
+test: fmtcheck
 	go test -i $(TEST) || exit 1
 	go test $(TESTARGS) -timeout=30s -parallel=4 $(TEST)
 
-vendor:
-	@glide install -v
-	@glide-vc --only-code --no-tests
-
-vendor-status:
-	@glide list
+testacc: fmtcheck
+	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 vet:
 	@echo 'go vet $(TEST)'
@@ -116,6 +119,24 @@ vet:
 		echo "and fix them if necessary before submitting the code for review."; \
 		exit 1; \
 	fi
+
+errcheck:
+	@sh -c "'$(CURDIR)/scripts/errcheck.sh'"
+
+vendor:
+	@glide install -v
+	@glide-vc --only-code --no-tests
+
+vendor-status:
+	@glide list
+
+test-compile:
+	@if [ "$(TEST)" = "./..." ]; then \
+		echo "ERROR: Set TEST to a specific package. For example,"; \
+		echo "  make test-compile TEST=./aws"; \
+		exit 1; \
+	fi
+	go test -c $(TEST) $(TESTARGS)
 
 clean:
 	@rm -rf bin

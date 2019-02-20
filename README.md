@@ -1,36 +1,89 @@
-# Vultr Terraform Provider
+Vultr Terraform Provider
+========================
 
-This is a Terraform provider for Vultr. Find out more about [Vultr](https://www.vultr.com/about/).
+This is a [Terraform][tf] provider for the Vultr cloud. Find out more about
+[Vultr][vultr].
 
-[![Build Status](https://travis-ci.org/squat/terraform-provider-vultr.svg?branch=master)](https://travis-ci.org/squat/terraform-provider-vultr)
-[![Go Report Card](https://goreportcard.com/badge/github.com/squat/terraform-provider-vultr)](https://goreportcard.com/report/github.com/squat/terraform-provider-vultr)
+[![Build Status][build-status-img]][build-status]
+[![Go Report Card][go-report-card-img]][go-report-card]
 
-## Requirements
+Requirements
+------------
 
-* A Vultr account and API key
-* [Terraform](https://www.terraform.io/downloads.html) 0.9+
-* [Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
+- A Vultr account and API key
+- [Terraform](https://www.terraform.io/downloads.html) 0.11.x
+- [Go](https://golang.org/doc/install) 1.10 (to build the provider plugin)
 
-## Usage
+Building The Provider
+---------------------
 
-Download `terraform-provider-vultr` from the [releases page](https://github.com/squat/terraform-provider-vultr/releases) and follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing it into your plugins directory,  run `terraform init` to initialize it.
+Clone repository to: `$GOPATH/src/github.com/squat/terraform-provider-vultr`
 
-*Note*: in order to build and install the provider from the latest commit on master, run:
 ```sh
-go get -u github.com/squat/terraform-provider-vultr
+$ mkdir -p $GOPATH/src/github.com/squat; cd $GOPATH/src/github.com/squat
+$ git clone git@github.com:squat/terraform-provider-vultr
 ```
 
-and then register the plugin by symlinking the binary to the [third-party plugins directory](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins):
+Enter the provider directory and build the provider
+
 ```sh
-mkdir -p ~/.terraform.d/plugins
-ln -s "$GOPATH/bin/terraform-provider-vultr" ~/.terraform.d/plugins/terraform-provider-vultr
+$ cd $GOPATH/src/github.com/squat/terraform-provider-vultr
+$ make build
 ```
 
-Set an environment variable containing the Vultr API key:
-```
+Using the provider
+----------------------
+If you're building the provider, follow the instructions to [install it][tf-plugin]
+as a plugin. After placing it into your plugins directory,  run `terraform init`
+to initialize it.
+
+The Vultr API key can be provided as environment variable
+
+```bash
 export VULTR_API_KEY=<your-vultr-api-key>
 ```
-*Note*: as an alternative, the API key can be specified in configuration as shown below.
+
+or on the Terraform provider configuration:
+
+```hcl
+provider "vultr" {
+  api_key = "<your-vultr-api-key>"
+}
+```
+
+Developing the Provider
+---------------------------
+
+If you wish to work on the provider, you'll first need [Go][golang] installed on
+your machine (version 1.10+ is *required*). You'll also need to correctly setup a
+[GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin`
+to your `$PATH`.
+
+To compile the provider, run `make build`. This will build the provider and put
+the provider binary in the `$GOPATH/bin` directory.
+
+```sh
+$ make build
+...
+$ $GOPATH/bin/terraform-provider-vultr
+...
+```
+
+In order to test the provider, you can simply run `make test`.
+
+*Note:* Make sure no `VULTR_API_KEY` variables is set.
+
+```sh
+$ make test
+```
+
+In order to run the full suite of Acceptance tests, run `make testacc`.
+
+*Note:* Acceptance tests create real resources, and often cost money to run.
+
+```sh
+$ make testacc
+```
 
 ## Examples
 
@@ -105,19 +158,12 @@ resource "vultr_firewall_rule" "ssh" {
 }
 ```
 
-## Development
 
-To develop the plugin locally, install the following dependencies:
-* [Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
-* [Glide](https://github.com/Masterminds/glide#install) (to install and maintain dependencies)
-* [glide-vc](https://github.com/sgotti/glide-vc#install) (to clean up dependencies)
-
-To build the plugin run:
-```sh
-make build
-```
-
-To update Go dependencies run:
-```sh
-make vendor
-```
+[build-status]: https://travis-ci.org/squat/terraform-provider-vultr
+[build-status-img]: https://travis-ci.org/squat/terraform-provider-vultr.svg?branch=master
+[go-report-card]: https://goreportcard.com/report/github.com/squat/terraform-provider-vultr
+[go-report-card-img]: https://goreportcard.com/badge/github.com/squat/terraform-provider-vultr
+[golang]: https://www.golang.org/
+[tf]: https://www.terraform.io/
+[tf-plugin]: https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin
+[vultr]: https://www.vultr.com/about/

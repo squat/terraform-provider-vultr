@@ -1,15 +1,32 @@
+dist: trusty
+sudo: false
 language: go
-
 go:
   - "1.10"
 
 install:
-  - go get -u golang.org/x/lint/golint
-  - go get -u github.com/hashicorp/terraform
+# This script is used by the Travis build to install a cookie for
+# go.googlesource.com so rate limits are higher when using `go get` to fetch
+# packages that live there.
+# See: https://github.com/golang/go/issues/12933
+- bash scripts/gogetcookie.sh
+- go get github.com/Masterminds/glide
+- go get -u golang.org/x/lint/golint
+- go get -u github.com/hashicorp/terraform
 
 script:
-  - make build
-  - make test
+- make build
+- make test
+- make vendor-status
+- make vet
 
 notifications:
   email: change
+
+branches:
+  only:
+  - master
+matrix:
+  fast_finish: true
+  allow_failures:
+  - go: tip
