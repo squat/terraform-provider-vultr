@@ -62,6 +62,12 @@ func resourceFirewallRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+
+			"notes": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -77,6 +83,7 @@ func resourceFirewallRuleCreate(d *schema.ResourceData, meta interface{}) error 
 	fromPort := d.Get("from_port").(int)
 	protocol := d.Get("protocol").(string)
 	toPort := d.Get("to_port").(int)
+	notes := d.Get("notes").(string)
 
 	_, fok := d.GetOk("from_port")
 	_, tok := d.GetOk("to_port")
@@ -98,7 +105,7 @@ func resourceFirewallRuleCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	log.Printf("[INFO] Creating new firewall rule")
-	id, err := client.CreateFirewallRule(firewallGroupID, protocol, port, cidrBlock)
+	id, err := client.CreateFirewallRule(firewallGroupID, protocol, port, cidrBlock, notes)
 	if err != nil {
 		return fmt.Errorf("Error creating firewall rule: %v", err)
 	}
@@ -145,6 +152,7 @@ func resourceFirewallRuleRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("direction", "in")
 	d.Set("firewall_group_id", firewallGroupID)
 	d.Set("protocol", firewallRule.Protocol)
+	d.Set("notes", firewallRule.Notes)
 	from, to, err := splitFirewallRule(firewallRule.Port)
 	if err != nil {
 		return fmt.Errorf("Error parsing port range for firewall rule (%s): %v", d.Id(), err)
