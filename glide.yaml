@@ -6,6 +6,7 @@ import:
   - lib
 - package: github.com/fatih/structs
 - package: github.com/hashicorp/terraform
+  version: v0.12.1
   subpackages:
   - helper/mutexkv
   - helper/resource
