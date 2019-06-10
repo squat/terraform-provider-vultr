@@ -44,6 +44,10 @@ resource "vultr_instance" "example" {
   tag               = "container-linux"
   firewall_group_id = "${vultr_firewall_group.example.id}"
 
+  connection {
+    host = "${vultr_instance.example.ipv4_address}"
+  }
+
   provisioner "remote-exec" {
     inline = ["docker run --rm --net=host tianon/speedtest"]
   }
