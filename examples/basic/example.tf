@@ -65,6 +65,7 @@ resource "vultr_firewall_rule" "ssh" {
   protocol          = "tcp"
   from_port         = 22
   to_port           = 22
+  notes             = "ssh"
 }
 
 // Add a firewall rule to the group allowing ICMP.
@@ -72,6 +73,7 @@ resource "vultr_firewall_rule" "icmp" {
   firewall_group_id = "${vultr_firewall_group.example.id}"
   cidr_block        = "0.0.0.0/0"
   protocol          = "icmp"
+  notes             = "icmp"
 }
 
 // Create a new SSH key.

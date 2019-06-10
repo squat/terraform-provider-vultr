@@ -1,5 +1,5 @@
-hash: d1570c35c8d8d9a710dad1089e669ad4ab66665a6788ca2d89201f5e31fbb54a
-updated: 2019-06-10T12:07:46.579527919+02:00
+hash: eec6f67d9ae1132bed7d08489450c123bc9fbc6f9d985fbbb05c5839d762da64
+updated: 2019-06-10T12:30:42.115662893+02:00
 imports:
 - name: cloud.google.com/go
   version: c8433c9aaceb2a28b9872cf46a23fa804996388c
@@ -212,7 +212,7 @@ imports:
 - name: github.com/hashicorp/yamux
   version: 2f1d1f20f75d5404f53b9edf6b53ed5505508675
 - name: github.com/JamesClonk/vultr
-  version: 882c666acc57cfc9fb3ccd8132655609092eb4af
+  version: fed59ad207c9bda0a5dfe4d18de53ccbb3d80c91
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
