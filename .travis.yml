@@ -1,14 +1,14 @@
 language: go
 
 go:
-  - "1.10"
+  - "1.12"
 
 install:
   - go get -u golang.org/x/lint/golint
   - go get -u github.com/hashicorp/terraform
 
 script:
-  - make build
+  - make install
   - make test
 
 notifications:

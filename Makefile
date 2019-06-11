@@ -1,11 +1,11 @@
-.PHONY: all-release build clean fmt fmt-go fmt-terraform lint lint-go lint-terraform release test vendor vendor-status vet 
+.PHONY: all-release all-builds build install clean fmt fmt-go fmt-terraform lint lint-go lint-terraform release test vendor vet 
 
 ARCH ?= amd64
 PLATFORM ?= linux
 ALL_PLATFORMS := darwin linux windows
 BIN := terraform-provider-vultr
 PKG := github.com/squat/$(BIN)
-BUILD_IMAGE ?= golang:1.10.0-alpine
+BUILD_IMAGE ?= golang:1.12-alpine
 TEST ?= $$(go list ./... | grep -v 'vendor/')
 GOFMT_FILES ?= $$(find . -name '*.go' | grep -v vendor)
 SRC := $(shell find . -type f -name '*.go' -not -path "./vendor/*")
@@ -15,17 +15,29 @@ TAG := $(shell git describe --abbrev=0 --tags HEAD 2>/dev/null)
 COMMIT := $(shell git rev-parse HEAD)
 VERSION := $(COMMIT)
 ifneq ($(TAG),)
-    ifeq ($(COMMIT), $(shell git rev-list -n1 $(TAG)))
-        VERSION := $(TAG)
-    endif
+	ifeq ($(COMMIT), $(shell git rev-list -n1 $(TAG)))
+		VERSION := $(TAG)
+	endif
 endif
 DIRTY := $(shell test -z "$$(git diff --shortstat 2>/dev/null)" || echo -dirty)
 VERSION := $(VERSION)$(DIRTY)
 
-default: build
+default: install
 
-build:
-	go install
+build: bin/$(BIN)
+
+bin/$(BIN):
+	@go build -o bin/$(BIN)
+
+install:
+	@go install
+
+all-builds: $(addprefix builds-, $(ALL_PLATFORMS))
+
+builds-%:
+	@$(MAKE) --no-print-directory ARCH=$(ARCH) PLATFORM=$* builds
+
+builds: bin/$(PLATFORM)/$(ARCH)/$(BIN)_$(VERSION)
 
 all-release: $(addprefix release-, $(ALL_PLATFORMS))
 
@@ -43,20 +55,21 @@ bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz.asc: bin/$(BIN)_$(VERSION)_$(PL
 bin/$(BIN)_$(VERSION)_$(PLATFORM)_$(ARCH).tar.gz: bin/$(PLATFORM)/$(ARCH)/$(BIN)_$(VERSION)
 	@tar -czf $@ -C $(<D) $(<F)
 
-bin/$(PLATFORM)/$(ARCH)/$(BIN)_$(VERSION): $(SRC) glide.yaml bin/$(PLATFORM)/$(ARCH)
+bin/$(PLATFORM)/$(ARCH)/$(BIN)_$(VERSION): $(SRC) bin/$(PLATFORM)/$(ARCH)
 	@echo "building: $@"
 	@docker run --rm \
-	    -u $$(id -u):$$(id -g) \
-	    -v $$(pwd):/go/src/$(PKG) \
-	    -v $$(pwd)/bin/$(PLATFORM)/$(ARCH):/go/bin \
-	    -w /go/src/$(PKG) \
-	    $(BUILD_IMAGE) \
-	    /bin/sh -c " \
-	        GOARCH=$(ARCH) \
-	        GOOS=$(PLATFORM) \
-		CGO_ENABLED=0 \
-		go build -o /go/bin/$(BIN)_$(VERSION) \
-	    "
+		-u $$(id -u):$$(id -g) \
+		-v $$(pwd):/go/src/$(PKG) \
+		-v $$(pwd)/bin/$(PLATFORM)/$(ARCH):/go/bin \
+		-e GOCACHE=/tmp/gocache/ \
+		-w /go/src/$(PKG) \
+		$(BUILD_IMAGE) \
+		/bin/sh -c " \
+			GOARCH=$(ARCH) \
+			GOOS=$(PLATFORM) \
+			CGO_ENABLED=0 \
+			go build -o /go/bin/$(BIN)_$(VERSION) \
+		"
 
 fmt: fmt-go fmt-terraform
 
@@ -96,17 +109,12 @@ lint-terraform:
 		exit 1; \
 	fi
 
-
 test: vet lint
 	go test -i $(TEST) || exit 1
 	go test $(TESTARGS) -timeout=30s -parallel=4 $(TEST)
 
 vendor:
-	@glide install -v
-	@glide-vc --only-code --no-tests
-
-vendor-status:
-	@glide list
+	go mod vendor
 
 vet:
 	@echo 'go vet $(TEST)'
