@@ -381,14 +381,6 @@ func resourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("ipv6_addresses", ipv6s)
 
-	// Initialize the connection information.
-	d.SetConnInfo(map[string]string{
-		"host":     instance.MainIP,
-		"password": instance.DefaultPassword,
-		"type":     "ssh",
-		"user":     "root",
-	})
-
 	return nil
 }
 
