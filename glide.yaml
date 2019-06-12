@@ -13,3 +13,7 @@ import:
   - helper/schema
   - plugin
   - terraform
+  - helper/validation
+- package: golang.org/x/net
+  subpackages:
+  - idna
