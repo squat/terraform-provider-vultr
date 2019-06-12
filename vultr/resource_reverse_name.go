@@ -35,13 +35,12 @@ func resourceReverseName() *schema.Resource {
 				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
 					return net.ParseIP(old).Equal(net.ParseIP(new))
 				},
-				ValidateFunc: validation.IPRange(),
+				ValidateFunc: validation.SingleIP(),
 			},
 
 			"name": {
 				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Required: true,
 				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
 					oldASCII, _ := idna.Registration.ToASCII(old)
 					newASCII, _ := idna.Registration.ToASCII(new)
