@@ -7,13 +7,14 @@ This is a Terraform provider for Vultr. Find out more about [Vultr](https://www.
 
 ## Requirements
 
-* A Vultr account and API key
+* A Vultr account and [API key](https://my.vultr.com/settings/#API)
 * [Terraform](https://www.terraform.io/downloads.html) 0.9+
 * [Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
 
 ## Usage
 
-Download `terraform-provider-vultr` from the [releases page](https://github.com/squat/terraform-provider-vultr/releases) and follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing it into your plugins directory,  run `terraform init` to initialize it.
+Download `terraform-provider-vultr` from the [releases page](https://github.com/squat/terraform-provider-vultr/releases) and follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin).
+After placing it into your plugins directory,  run `terraform init` to initialize it.
 
 *Note*: in order to build and install the provider from the latest commit on master, run:
 ```sh
@@ -108,16 +109,36 @@ resource "vultr_firewall_rule" "ssh" {
 ## Development
 
 To develop the plugin locally, install the following dependencies:
-* [Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
-* [Glide](https://github.com/Masterminds/glide#install) (to install and maintain dependencies)
-* [glide-vc](https://github.com/sgotti/glide-vc#install) (to clean up dependencies)
+* [Go](https://golang.org/doc/install) 1.11 (to build the provider plugin)
 
 To build the plugin run:
 ```sh
 make build
 ```
 
+To build and install the plugin to `$GOTPATH/bin/` run:
+```sh
+make install
+```
+
 To update Go dependencies run:
 ```sh
 make vendor
 ```
+
+To build the plugin for all platforms:
+```sh
+make all-builds
+```
+
+## Release
+
+To release the plugin, install the following dependencies:
+* [Docker](https://docs.docker.com/install/) (to build the provider plugin for all supported platforms)
+
+To make the release version:
+```sh
+make all-release
+```
+
+For the command above you need to have a GPG key defined as default key.
