@@ -71,7 +71,7 @@ func resourceReverseNameCreate(d *schema.ResourceData, meta interface{}) error {
 	ip := net.ParseIP(d.Get("ip").(string))
 	name := d.Get("name").(string)
 
-	log.Printf("[INFO] Setting reverse name for ip (%s)", ip)
+	log.Printf("[INFO] Setting reverse name for IP (%s)", ip)
 
 	setOrUpdateReverseName(client, id, ip, name)
 
@@ -104,7 +104,7 @@ func resourceReverseNameRead(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
-		log.Printf("Can't get reverse name of IPv4 (%s) on instance (%s). Assuming that this IPv4 was deleted.", ip, id)
+		log.Printf("[INFO] Can't get reverse name of IPv4 (%s) on instance (%s). Assuming that this IPv4 was deleted.", ip, id)
 		d.SetId("")
 		return nil
 	}
@@ -121,7 +121,7 @@ func resourceReverseNameRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	log.Printf("Can't get reverse name of IPv6 (%s) on instance (%s). Assuming that this IPv6 was deleted.", ip, id)
+	log.Printf("[INFO] Can't get reverse name of IPv6 (%s) on instance (%s). Assuming that this IPv6 was deleted.", ip, id)
 	d.SetId("")
 	return nil
 }
@@ -132,7 +132,7 @@ func resourceReverseNameUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("name") {
 		id := d.Get("instance_id").(string)
 		ip := net.ParseIP(d.Get("ip").(string))
-		log.Printf("[INFO] Updating reverse name for ip (%s)", ip)
+		log.Printf("[INFO] Updating reverse name for IP (%s)", ip)
 		_, new := d.GetChange("name")
 		setOrUpdateReverseName(client, id, ip, new.(string))
 	}
@@ -159,11 +159,10 @@ func setOrUpdateReverseName(client *Client, id string, ip net.IP, name string) e
 func resourceReverseNameDelete(d *schema.ResourceData, meta interface{}) error {
 	id, ip, err := splitID(d.Id())
 
-	log.Printf("[INFO] Destroying resource reverse name for ip (%s)", ip)
+	log.Printf("[INFO] Destroying reverse name for IP (%s)", ip)
 
 	if isIPv4(ip) {
 		// The reverse name can not be "unset", so doing nothing here
-
 		d.SetId("")
 		return nil
 	}
@@ -172,7 +171,7 @@ func resourceReverseNameDelete(d *schema.ResourceData, meta interface{}) error {
 
 	err = client.DeleteIPv6ReverseDNS(id, ip.String())
 	if err != nil {
-		return fmt.Errorf("Error deleting reverse name for ip (%s): %v", ip, err)
+		return fmt.Errorf("Error deleting reverse name for IP (%s): %v", ip, err)
 	}
 
 	d.SetId("")
@@ -183,7 +182,7 @@ func splitID(resourceID string) (id string, ip net.IP, err error) {
 	strs := strings.SplitN(resourceID, "/", 2)
 
 	if len(strs) != 2 {
-		err = fmt.Errorf("Error decoding id '%s', the format should be 'instance_id/ip'", resourceID)
+		err = fmt.Errorf("Error decoding id '%s', the format should be 'instance_id/IP'", resourceID)
 		return
 	}
 
