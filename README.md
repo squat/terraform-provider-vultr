@@ -9,7 +9,7 @@ This is a Terraform provider for Vultr. Find out more about [Vultr](https://www.
 
 * A Vultr account and [API key](https://my.vultr.com/settings/#API)
 * [Terraform](https://www.terraform.io/downloads.html) 0.9+
-* [Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
+* [Go](https://golang.org/doc/install) 1.10 (to build the provider plugin)
 
 ## Usage
 
