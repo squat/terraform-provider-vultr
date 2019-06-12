@@ -1,8 +1,8 @@
-hash: eec6f67d9ae1132bed7d08489450c123bc9fbc6f9d985fbbb05c5839d762da64
-updated: 2019-06-10T12:30:42.115662893+02:00
+hash: e4201e4bd0b159fe596a1eb3f7f82807b5860d6a86745f9ed94a4ee3ae11dce1
+updated: 2019-06-12T13:03:34.413733+02:00
 imports:
 - name: cloud.google.com/go
-  version: c8433c9aaceb2a28b9872cf46a23fa804996388c
+  version: 4987c45d9a9281086f86d4b8ce530692225444f5
   subpackages:
   - compute/metadata
   - iam
@@ -24,7 +24,7 @@ imports:
 - name: github.com/armon/go-radix
   version: 1a2de0c21c94309923825da3df33a4381872c795
 - name: github.com/aws/aws-sdk-go
-  version: 13e896780680ce557f16a75a84c67e04e9aa420f
+  version: 2aa0226ea0e068a447add5c5c0ab36a9fbf55631
   subpackages:
   - aws
   - aws/awserr
@@ -87,7 +87,7 @@ imports:
   - ptypes/duration
   - ptypes/timestamp
 - name: github.com/google/go-cmp
-  version: 917e382dab80060fd1f094402bfbb5137ec3c4ff
+  version: 1b316004397f1f336546ca058ddb5b95c41a8772
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -111,7 +111,7 @@ imports:
 - name: github.com/hashicorp/go-multierror
   version: 886a7fbe3eb1c874d46f623bfa70af45f425b3d1
 - name: github.com/hashicorp/go-plugin
-  version: a1756f37cec6471f10accdf15a5e5961317bea0d
+  version: a1bc61569a26c0f65865932c0d55743b0567c494
   subpackages:
   - internal/plugin
 - name: github.com/hashicorp/go-safetemp
@@ -125,7 +125,7 @@ imports:
   subpackages:
   - simplelru
 - name: github.com/hashicorp/hcl
-  version: 99e2f22d1c94b272184d97dd9d252866409100ab
+  version: cf7d376da96d9cecec7c7483cec2735efe54a410
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -136,7 +136,7 @@ imports:
   - json/scanner
   - json/token
 - name: github.com/hashicorp/hcl2
-  version: 4b22149b7cef7272799ac85dca150e553d667971
+  version: 318e80eefe28c3aa01b434c61bcf4c83a0cc6b25
   subpackages:
   - ext/dynblock
   - ext/typeexpr
@@ -178,6 +178,8 @@ imports:
   - helper/plugin
   - helper/resource
   - helper/schema
+  - helper/structure
+  - helper/validation
   - httpclient
   - internal/earlyconfig
   - internal/initwd
@@ -244,7 +246,7 @@ imports:
 - name: github.com/oklog/run
   version: 6934b124db28979da51d3470dadfa34d73d72652
 - name: github.com/posener/complete
-  version: e1dacfd844689f61861874e851232cbea55bd2d0
+  version: 60e9d0a237999e714fb4d04727fe7ffa1b377c6e
   subpackages:
   - cmd
   - cmd/install
@@ -264,7 +266,7 @@ imports:
   subpackages:
   - codes
 - name: github.com/zclconf/go-cty
-  version: 4fecf87372ec204b46eb9e8ff264cdc3cafdccfe
+  version: 6fd39ad70c3a6bbdb1b4e47444e4cce72f901200
   subpackages:
   - cty
   - cty/convert
@@ -275,7 +277,7 @@ imports:
   - cty/msgpack
   - cty/set
 - name: go.opencensus.io
-  version: a092815c29e3a8fb79dfa966ad048ed20f1f8c01
+  version: f6172e422374225c6748bd2a9c872e88c2eb43d4
   subpackages:
   - internal
   - internal/tagencoding
@@ -309,7 +311,7 @@ imports:
   - ssh/agent
   - ssh/terminal
 - name: golang.org/x/net
-  version: 60506f45cf65977eb3a9c6e30f995f54a721c271
+  version: 3f473d35a33aa6fdd203e306dc439b797820e3f1
   subpackages:
   - context
   - context/ctxhttp
@@ -327,7 +329,7 @@ imports:
   - jws
   - jwt
 - name: golang.org/x/sys
-  version: 4c4f7f33c9ed00de01c4c741d2177abfcfe19307
+  version: 93c9922d18aeb82498a065f07aec7ad7fa60dfb7
   subpackages:
   - unix
 - name: golang.org/x/text
@@ -338,7 +340,7 @@ imports:
   - unicode/bidi
   - unicode/norm
 - name: google.golang.org/api
-  version: 321c6e0df652a9dee5b1c96f5d80264bd9e9e1b6
+  version: d59c85bd6e39a29b5454e2d7b2d05f75fc1edf32
   subpackages:
   - gensupport
   - googleapi
@@ -351,7 +353,7 @@ imports:
   - transport/http
   - transport/http/internal/propagation
 - name: google.golang.org/appengine
-  version: de285f9b71d302e953472c27f2152dfe8fac5195
+  version: b2f4a3cf3c67576a2ee09e1fe62656a5086ce880
   subpackages:
   - datastore
   - datastore/internal/cloudkey
@@ -366,7 +368,7 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: google.golang.org/genproto
-  version: eb0b1bdb6ae60fcfc41b8d907b50dfb346112301
+  version: a7e196e89fd3a3c4d103ca540bd5dac3a736e375
   subpackages:
   - googleapis/api/annotations
   - googleapis/iam/v1
@@ -374,7 +376,7 @@ imports:
   - googleapis/rpc/status
   - googleapis/type/expr
 - name: google.golang.org/grpc
-  version: d33cecdaddaa914130410059cdcca8b3b0176985
+  version: a1d4c283c6bcd51bb1162a0eb0b59ad1dd4b7a56
   subpackages:
   - balancer
   - balancer/base
