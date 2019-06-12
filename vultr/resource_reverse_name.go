@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
+	"golang.org/x/net/idna"
 )
 
 func resourceReverseName() *schema.Resource {
@@ -30,15 +32,33 @@ func resourceReverseName() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
 					return net.ParseIP(old).Equal(net.ParseIP(new))
 				},
+				ValidateFunc: validation.IPRange(),
 			},
 
 			"name": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
+					oldASCII, _ := idna.Registration.ToASCII(old)
+					newASCII, _ := idna.Registration.ToASCII(new)
+
+					return oldASCII == newASCII
+				},
+				StateFunc: func(val interface{}) string {
+					ascii, _ := idna.Registration.ToASCII(val.(string))
+					return ascii
+				},
+				ValidateFunc: func(val interface{}, key string) (_ []string, errs []error) {
+					_, err := idna.Registration.ToASCII(val.(string))
+					if err != nil {
+						errs = append(errs, fmt.Errorf("Error validating %s: Expected '%s' to be a valid domain name", key, val))
+					}
+					return
+				},
 			},
 		},
 	}
