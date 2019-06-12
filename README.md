@@ -35,7 +35,7 @@ export VULTR_API_KEY=<your-vultr-api-key>
 ## Examples
 
 ```tf
-// Configure the Vultr provider. 
+// Configure the Vultr provider.
 // Alternatively, export the API key as an environment variable: `export VULTR_API_KEY=<your-vultr-api-key>`.
 provider "vultr" {
   api_key = "<your-vultr-api-key>"
@@ -117,6 +117,15 @@ resource "vultr_reverse_name" "example_v6" {
   instance_id = "${vultr_instance.example.id}"
   ip          = "${vultr_instance.example.ipv6_addresses[0]}"
   name        = "example.com"
+}
+
+// Query reverse name for main IPv6
+data "vultr_reverse_name" "example" {
+  instance_id = "${vultr_instance.example.id}"
+  ip          = "${vultr_instance.example.ipv4_address}"
+}
+output "example" {
+  value = "${data.vultr_reverse_name.example.name}"
 }
 ```
 
