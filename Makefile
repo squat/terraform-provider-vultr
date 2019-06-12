@@ -114,6 +114,7 @@ test: vet lint
 	go test $(TESTARGS) -timeout=30s -parallel=4 $(TEST)
 
 vendor:
+	go mod tidy
 	go mod vendor
 
 vet:
