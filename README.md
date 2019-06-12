@@ -88,6 +88,7 @@ resource "vultr_instance" "example" {
   hostname          = "example"
   tag               = "container-linux"
   firewall_group_id = "${vultr_firewall_group.example.id}"
+  ipv6              = true
 }
 
 // Create a new firewall group.
@@ -102,6 +103,20 @@ resource "vultr_firewall_rule" "ssh" {
   protocol          = "tcp"
   from_port         = 22
   to_port           = 22
+}
+
+// Define reverse name for main IPv4
+resource "vultr_reverse_name" "example_v4" {
+  instance_id = "${vultr_instance.example.id}"
+  ip          = "${vultr_instance.example.ipv4_address}"
+  name        = "example.com"
+}
+
+// Define reverse name for main IPv4
+resource "vultr_reverse_name" "example_v6" {
+  instance_id = "${vultr_instance.example.id}"
+  ip          = "${vultr_instance.example.ipv6_addresses[0]}"
+  name        = "example.com"
 }
 ```
 
