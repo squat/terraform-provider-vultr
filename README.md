@@ -113,7 +113,7 @@ resource "vultr_reverse_name" "example_v4" {
   name        = "example.com"
 }
 
-// Define reverse name for main IPv4
+// Define reverse name for main IPv6
 resource "vultr_reverse_name" "example_v6" {
   instance_id = "${vultr_instance.example.id}"
   ip          = "${vultr_instance.example.ipv6_addresses[0]}"
