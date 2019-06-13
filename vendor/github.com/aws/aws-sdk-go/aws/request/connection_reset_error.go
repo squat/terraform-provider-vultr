@@ -1,9 +1,19 @@
+// +build !appengine,!plan9
+
 package request
 
 import (
-	"strings"
+	"net"
+	"os"
+	"syscall"
 )
 
 func isErrConnectionReset(err error) bool {
-	return strings.Contains(err.Error(), "connection reset")
+	if opErr, ok := err.(*net.OpError); ok {
+		if sysErr, ok := opErr.Err.(*os.SyscallError); ok {
+			return sysErr.Err == syscall.ECONNRESET
+		}
+	}
+
+	return false
 }
