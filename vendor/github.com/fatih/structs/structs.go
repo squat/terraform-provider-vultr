@@ -132,9 +132,9 @@ func (s *Struct) FillMap(out map[string]interface{}) {
 		}
 
 		if tagOpts.Has("string") {
-			s, ok := val.Interface().(fmt.Stringer)
-			if ok {
-				out[name] = s.String()
+			s := fmt.Sprintf("%v", val.Interface())
+			if s != "" {
+				out[name] = s
 			}
 			continue
 		}
