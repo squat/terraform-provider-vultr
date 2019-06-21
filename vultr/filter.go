@@ -3,8 +3,8 @@ package vultr
 import (
 	"strconv"
 
-	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/squat/terraform-provider-vultr/structs"
 )
 
 func structToMap(s interface{}) map[string]string {
