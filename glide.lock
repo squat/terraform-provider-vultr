@@ -1,5 +1,5 @@
-hash: eec6f67d9ae1132bed7d08489450c123bc9fbc6f9d985fbbb05c5839d762da64
-updated: 2019-06-10T12:30:42.115662893+02:00
+hash: 2d6bc56dfb0cd7d837e82b8e0ec36e6fb19f7dc9cdad1daa55477276bbe3f774
+updated: 2019-08-01T15:39:34.482693079+02:00
 imports:
 - name: cloud.google.com/go
   version: c8433c9aaceb2a28b9872cf46a23fa804996388c
@@ -212,13 +212,11 @@ imports:
 - name: github.com/hashicorp/yamux
   version: 2f1d1f20f75d5404f53b9edf6b53ed5505508675
 - name: github.com/JamesClonk/vultr
-  version: fed59ad207c9bda0a5dfe4d18de53ccbb3d80c91
+  version: ea92af1525b60d4eb6aed8d17fab725592e06ed2
   subpackages:
   - lib
 - name: github.com/jmespath/go-jmespath
   version: c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5
-- name: github.com/juju/ratelimit
-  version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/mattn/go-colorable
   version: 8029fb3788e5a4a9c00e415f586a6d033f5d38b3
 - name: github.com/mattn/go-isatty
@@ -337,6 +335,10 @@ imports:
   - transform
   - unicode/bidi
   - unicode/norm
+- name: golang.org/x/time
+  version: f51c12702a4d776e4c1fa9b0fabab841babae631
+  subpackages:
+  - rate
 - name: google.golang.org/api
   version: 321c6e0df652a9dee5b1c96f5d80264bd9e9e1b6
   subpackages:

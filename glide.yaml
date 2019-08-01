@@ -1,7 +1,7 @@
 package: github.com/squat/terraform-provider-vultr
 import:
 - package: github.com/JamesClonk/vultr
-  version: v2.0.0
+  version: ea92af1525b60d4eb6aed8d17fab725592e06ed2
   subpackages:
   - lib
 - package: github.com/fatih/structs
