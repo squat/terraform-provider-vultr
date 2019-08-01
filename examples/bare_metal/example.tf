@@ -32,7 +32,7 @@ data "vultr_bare_metal_plan" "eightcpus" {
 resource "vultr_bare_metal" "example" {
   name      = "example"
   hostname  = "example"
-  region_id = "${data.vultr_region.silicon_valley.id}"
-  plan_id   = "${data.vultr_bare_metal_plan.eightcpus.id}"
-  os_id     = "${data.vultr_os.container_linux.id}"
+  region_id = data.vultr_region.silicon_valley.id
+  plan_id   = data.vultr_bare_metal_plan.eightcpus.id
+  os_id     = data.vultr_os.container_linux.id
 }

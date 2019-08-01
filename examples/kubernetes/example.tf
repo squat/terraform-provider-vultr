@@ -4,18 +4,18 @@ resource "vultr_dns_domain" "example" {
 }
 
 module "typhoon" {
-  source = "git::https://github.com/squat/typhoon-vultr?ref=v1.13.5"
+  source = "git::https://github.com/squat/typhoon-vultr?ref=v1.15.1"
 
   cluster_name = "example"
 
   # Vultr
-  region          = "${data.vultr_region.frankfurt.id}"
-  dns_zone        = "${vultr_dns_domain.example.domain}"
-  controller_type = "${data.vultr_plan.2gb.id}"
-  worker_type     = "${data.vultr_plan.2gb.id}"
+  region          = data.vultr_region.frankfurt.id
+  dns_zone        = vultr_dns_domain.example.domain
+  controller_type = data.vultr_plan.twogb.id
+  worker_type     = data.vultr_plan.twogb.id
 
   # configuration
-  ssh_authorized_key = "${file("/path/to/ssh/public/key")}"
+  ssh_authorized_key = file("/path/to/ssh/public/key")
   asset_dir          = "assets"
 
   # optional
@@ -29,9 +29,14 @@ data "vultr_region" "frankfurt" {
   }
 }
 
-data "vultr_plan" "2gb" {
+data "vultr_plan" "twogb" {
   filter {
     name   = "ram"
     values = ["2048"]
+  }
+
+  filter {
+    name   = "plan_type"
+    values = ["SSD"]
   }
 }

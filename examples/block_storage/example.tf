@@ -15,6 +15,6 @@ data "vultr_region" "has_block_storage" {
 // Create block storage.
 resource "vultr_block_storage" "example" {
   name      = "example"
-  region_id = "${data.vultr_region.has_block_storage.id}"
+  region_id = data.vultr_region.has_block_storage.id
   size      = 50
 }

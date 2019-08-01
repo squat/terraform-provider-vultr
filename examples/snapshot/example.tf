@@ -33,7 +33,7 @@ data "vultr_plan" "starter" {
 // Create a Vultr virtual machine.
 resource "vultr_instance" "snapshot" {
   name        = "snapshot"
-  region_id   = "${data.vultr_region.silicon_valley.id}"
-  plan_id     = "${data.vultr_plan.starter.id}"
-  snapshot_id = "${data.vultr_snapshot.master.id}"
+  region_id   = data.vultr_region.silicon_valley.id
+  plan_id     = data.vultr_plan.starter.id
+  snapshot_id = data.vultr_snapshot.master.id
 }

@@ -12,9 +12,9 @@ resource "vultr_dns_domain" "example" {
 
 // Create a new DNS record.
 resource "vultr_dns_record" "example_web" {
-  domain = "${vultr_dns_domain.example.id}"
+  domain = vultr_dns_domain.example.id
   name   = "www"
   type   = "A"
-  data   = "${vultr_dns_domain.example.ip}"
+  data   = vultr_dns_domain.example.ip
   ttl    = 300
 }

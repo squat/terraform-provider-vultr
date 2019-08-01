@@ -45,8 +45,8 @@ data "vultr_plan" "starter" {
 resource "vultr_instance" "openvpn" {
   name           = "openvpn"
   hostname       = "openvpn"
-  region_id      = "${data.vultr_region.silicon_valley.id}"
-  plan_id        = "${data.vultr_plan.starter.id}"
-  os_id          = "${data.vultr_os.application.id}"
-  application_id = "${data.vultr_application.openvpn.id}"
+  region_id      = data.vultr_region.silicon_valley.id
+  plan_id        = data.vultr_plan.starter.id
+  os_id          = data.vultr_os.application.id
+  application_id = data.vultr_application.openvpn.id
 }

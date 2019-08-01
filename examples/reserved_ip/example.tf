@@ -36,21 +36,21 @@ data "vultr_plan" "starter" {
 // Create a Vultr virtual machine.
 resource "vultr_instance" "example" {
   name        = "example"
-  region_id   = "${data.vultr_region.silicon_valley.id}"
-  plan_id     = "${data.vultr_plan.starter.id}"
-  os_id       = "${data.vultr_os.container_linux.id}"
-  ssh_key_ids = ["${vultr_ssh_key.squat.id}"]
+  region_id   = data.vultr_region.silicon_valley.id
+  plan_id     = data.vultr_plan.starter.id
+  os_id       = data.vultr_os.container_linux.id
+  ssh_key_ids = [vultr_ssh_key.squat.id]
 }
 
 // Create a new SSH key.
 resource "vultr_ssh_key" "squat" {
   name       = "squat"
-  public_key = "${file("~/lserven.ssh")}"
+  public_key = file("~/lserven.ssh")
 }
 
 // Create a reserved IP.
 resource "vultr_reserved_ip" "example" {
   name        = "example"
-  attached_id = "${vultr_instance.example.id}"
-  region_id   = "${data.vultr_region.silicon_valley.id}"
+  attached_id = vultr_instance.example.id
+  region_id   = data.vultr_region.silicon_valley.id
 }

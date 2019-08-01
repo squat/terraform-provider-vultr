@@ -36,22 +36,22 @@ data "vultr_os" "ubuntu" {
 // Create a pair of Vultr private networks.
 resource "vultr_network" "network" {
   count       = 2
-  cidr_block  = "${cidrsubnet("192.168.0.0/23", 1, count.index)}"
+  cidr_block  = cidrsubnet("192.168.0.0/23", 1, count.index)
   description = "test_${count.index}"
-  region_id   = "${data.vultr_region.frankfurt.id}"
+  region_id   = data.vultr_region.frankfurt.id
 }
 
 // Create a Vultr virtual machine.
 resource "vultr_instance" "ubuntu" {
   name        = "ubuntu"
-  network_ids = ["${vultr_network.network.*.id}"]
-  region_id   = "${data.vultr_region.frankfurt.id}"
-  plan_id     = "${data.vultr_plan.starter.id}"
-  os_id       = "${data.vultr_os.ubuntu.id}"
+  network_ids = vultr_network.network.*.id
+  region_id   = data.vultr_region.frankfurt.id
+  plan_id     = data.vultr_plan.starter.id
+  os_id       = data.vultr_os.ubuntu.id
   ipv6        = true
 }
 
 // Output all of the virtual machine's IPv6 addresses to STDOUT when the infrastructure is ready.
-output ip_addresses {
-  value = "${vultr_instance.ubuntu.ipv6_addresses}"
+output "ip_addresses" {
+  value = vultr_instance.ubuntu.ipv6_addresses
 }
